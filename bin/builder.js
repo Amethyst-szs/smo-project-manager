@@ -153,15 +153,19 @@ module.exports = {
         console.log(`Cleaning up SoundData folder...`);
 
         //Read all files in SoundData folder
-        SoundDataContents = fs.readdirSync(`${WorkingDirectory}/romfs/SoundData/`);
+        isSoundDataFolderExist = fs.existsSync(`${WorkingDirectory}/romfs/SoundData/`);
 
-        //Make stream directory
-        fs.mkdirSync(`${WorkingDirectory}/romfs/SoundData/stream/`);
+        if(isSoundDataFolderExist){
+            SoundDataContents = fs.readdirSync(`${WorkingDirectory}/romfs/SoundData/`);
 
-        for(i=0;i<SoundDataContents.length;i++){
-            if(SoundDataContents[i].includes(`.bfstm`)){
-                fs.moveSync(`${WorkingDirectory}/romfs/SoundData/${SoundDataContents[i]}`,
-                `${WorkingDirectory}/romfs/SoundData/stream/${SoundDataContents[i]}`);
+            //Make stream directory
+            fs.mkdirSync(`${WorkingDirectory}/romfs/SoundData/stream/`);
+    
+            for(i=0;i<SoundDataContents.length;i++){
+                if(SoundDataContents[i].includes(`.bfstm`)){
+                    fs.moveSync(`${WorkingDirectory}/romfs/SoundData/${SoundDataContents[i]}`,
+                    `${WorkingDirectory}/romfs/SoundData/stream/${SoundDataContents[i]}`);
+                }
             }
         }
 
