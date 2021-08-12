@@ -1,5 +1,6 @@
 # Super Mario Odyssey - Project Manager
 This is an early WIP tool to make your life with Odyssey modding less painful!
+When starting the program, make sure to run "init.bat" to install dependencies first. Then you can use "run.bat"!
 
 ### Dependencies
 -Node  
