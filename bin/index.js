@@ -15,7 +15,7 @@ let ProjectData;
 
 async function MainMenuLoop() {
     //Prepare console
-    // console.clear();
+    console.clear();
     console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`), {margin: 1, borderStyle: 'double'}));
 
     console.log(chalk.green.bold(`
@@ -48,7 +48,8 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
         case `Add New Language`:
             const newlang = require('./newlang');
             LangSelection = await menu.NewLanguage();
-            newlang.NewLang(WorkingDirectory, LangSelection);
+            newlang.NewLang(WorkingDirectory, LangSelection, OwnDirectory);
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         default:

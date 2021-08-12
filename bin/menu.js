@@ -5,7 +5,7 @@ var fs = require('fs');
 
 module.exports = {
     GenericConfirm: async function(){
-        input.select(`Got it?`, [`That's right`, `Yes`])
+        await input.select(`Got it?`, [`That's right`, `Yes`])
     },
 
     InitalizeProject: async function(){
