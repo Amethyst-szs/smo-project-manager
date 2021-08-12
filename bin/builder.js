@@ -152,7 +152,7 @@ module.exports = {
         //Alert console
         console.log(`Cleaning up SoundData folder...`);
 
-        //Read all files in SoundData folder
+        //Read all files in SoundData folder, but first make sure the SoundData folder exists
         isSoundDataFolderExist = fs.existsSync(`${WorkingDirectory}/romfs/SoundData/`);
 
         if(isSoundDataFolderExist){

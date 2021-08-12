@@ -42,9 +42,15 @@ module.exports = {
         //Make new directory in project
         fs.mkdirSync(`${WorkingDirectory}/project/Text/${LangSelection}/`);
 
+        //Create list of all language container files
+        SMOSourceLang = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/`);
+        //Remove everything that isn't a .szs
+        for(i=0;i<SMOSourceLang.length;i++){
+            if (!SMOSourceLang[i].includes(`.szs`)) { SMOSourceLang.splice(i, 1); }
+        }
+
         //Copy files
         console.log(chalk.greenBright.bold(`Confirmed valid language to add!`));
-        SMOSourceLang = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/`);
         for(i=0;i<SMOSourceLang.length;i++){
             fs.copyFileSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/${SMOSourceLang[i]}`,
             `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
