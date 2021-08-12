@@ -47,6 +47,7 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         default:
             console.log(`Invalid Selection`);
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
     }

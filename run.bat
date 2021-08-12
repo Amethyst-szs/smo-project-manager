@@ -1,2 +1,2 @@
 @echo off
-node D:\GitHub\Repos\smo-project-manager\smo-project-manager/bin/index.js
+node %0\..\bin\index.js
