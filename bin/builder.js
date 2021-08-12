@@ -5,7 +5,7 @@ const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
 
 module.exports = {
-    Build: function(ProjectData, WorkingDirectory, FullBuild){
+    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory){
         //Console setup
         console.clear();
         console.log(chalk.red.bold(`Building project...\nDon't close the program or alter any files!\n`));
@@ -128,7 +128,7 @@ module.exports = {
             LangContainers = fs.readdirSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}`);
             for(CurrentContainer=0;CurrentContainer<LangContainers.length;CurrentContainer++){
                 //Run SarcTool on current text container
-                execSync(`D:/JS/SMOProjectManager/sarctool/sarc_tool.exe -little -compress 9 ${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}`, (err, stdout, stderr) => {
+                execSync(`${OwnDirectory}sarctool/sarc_tool.exe -little -compress 9 ${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}`, (err, stdout, stderr) => {
                     if (err) {
                       console.log(chalk.red.bold(`SarcTool Error!`));
                       return;

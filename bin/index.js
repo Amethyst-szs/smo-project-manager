@@ -27,17 +27,17 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     MenuSelection = await menu.MainMenu();
     switch (MenuSelection){
         case `Build Project (Full)`:
-            ProjectData = await builder.Build(ProjectData, WorkingDirectory, true);
+            ProjectData = await builder.Build(ProjectData, WorkingDirectory, true, OwnDirectory);
             MainMenuLoop();
             return;
         case `Build Project (Quick)`:
-            ProjectData = await builder.Build(ProjectData, WorkingDirectory, false);
+            ProjectData = await builder.Build(ProjectData, WorkingDirectory, false, OwnDirectory);
             MainMenuLoop();
             return;
         case `Add Template Objects`:
-            SelectedObjects = await menu.TemplateObject();
+            SelectedObjects = await menu.TemplateObject(OwnDirectory);
             const template = require('./template');
-            template.CopyFiles(WorkingDirectory, SelectedObjects);
+            template.CopyFiles(WorkingDirectory, SelectedObjects, OwnDirectory);
             MainMenuLoop();
             return;
         case `Refresh EditorCore`:

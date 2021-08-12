@@ -35,8 +35,8 @@ module.exports = {
         `Refresh EditorCore`]);
     },
 
-    TemplateObject: async function(){
-        AllObjects = fs.readdirSync(`D:/JS/SMOProjectManager/templateszs/`);
+    TemplateObject: async function(OwnDirectory){
+        AllObjects = fs.readdirSync(`${OwnDirectory}templateszs/`);
         return await input.checkboxes(`Select all templates you would like:`, AllObjects);
     }
 }
