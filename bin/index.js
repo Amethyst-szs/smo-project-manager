@@ -76,15 +76,7 @@ async function SetupCheck() {
 
     if(!fs.existsSync(`${OwnDirectory}/directories.json`)){
         console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
-        directoriesDefault = {
-            "EditorCore": "",
-            "SMODirectory": "",
-            "Optional": {
-                "ObjectDataOverride": "",
-                "LocalizedDataOverride": ""
-            }
-        }
-        writeJsonSync(OwnDirectory+'directories.json', directoriesDefault);
+        directorysetup.CreateFile(OwnDirectory);
         menu.GenericConfirm();
         return;
     } else {

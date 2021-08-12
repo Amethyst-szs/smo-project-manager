@@ -2,6 +2,19 @@ var fs = require('fs-extra');
 const chalk = require("chalk");
 
 module.exports = {
+    CreateFile: function(OwnDirectory){
+        directoriesDefault = {
+            "EditorCore": "",
+            "SMODirectory": "",
+            "Optional": {
+                "ObjectDataOverride": "",
+                "LocalizedDataOverride": ""
+            }
+        }
+        writeJsonSync(OwnDirectory+'directories.json', directoriesDefault);
+        return;
+    },
+    
     IssuesCheck: function(OwnDirectory){
         Directories = require('../directories.json');
 
