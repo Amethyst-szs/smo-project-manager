@@ -10,6 +10,7 @@ This is an early WIP tool to make your life with Odyssey modding less painful!
 -Automatically create SMO mod folder structure  
 -Allows sub-folders to organize mods  
 -Automatically refresh EditorCore with custom models  
+-Keep text data uncompressed, the program automatically compresses the files with SarcTool on build  
 -Use template objects  
 
 ### Credits
