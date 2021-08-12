@@ -92,7 +92,7 @@ async function SetupCheck() {
     {
         //Load in required files
         ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
-        ProgramVersion = await require('../version.json');
+        ProgramVersion = require('../version.json');
         
         //Check for project updates
         if(ProjectData.Version == ProgramVersion.Version){
