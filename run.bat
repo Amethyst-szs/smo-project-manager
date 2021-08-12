@@ -1,3 +1,2 @@
 @echo off
-node D:/JS/SMOProjectManager/bin/index.js
-pause
+node D:\GitHub\Repos\smo-project-manager\smo-project-manager/bin/index.js

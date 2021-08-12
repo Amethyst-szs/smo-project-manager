@@ -6,8 +6,10 @@ const boxen = require('boxen');
 //Code File Extensions
 const menu = require('./menu');
 const builder = require('./builder');
+const { writeJsonSync } = require('fs-extra');
 
 //Variable Setup
+let OwnDirectory = __dirname.slice(0,__dirname.length-3);
 let WorkingDirectory = process.cwd();
 let ProjectData;
 
@@ -54,6 +56,30 @@ async function SetupCheck() {
     //Working Directory Check
     console.log(chalk.cyan.underline(`Checking directory...`));
 
+    //Check Directories.json
+    if(!fs.existsSync(`${OwnDirectory}/directories.json`)){
+        console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
+        writeJsonSync(OwnDirectory+'directories.json', { "EditorCore": "", "SMODirectory": "" });
+        menu.GenericConfirm();
+        return;
+    } else {
+        Directories = require('../directories.json');
+
+        //Check if EditorCore directory is invalid
+        if(!fs.existsSync(Directories.EditorCore+`/EditorCore.exe`)){
+            console.log(chalk.red.bold(`EditorCore directory invalid!\nMake sure this folder contains EditorCore.exe and make sure the directories.json path doesn't end in a slash`));
+            menu.GenericConfirm();
+            return;
+        }
+
+        if(!fs.existsSync(Directories.SMODirectory+`/EffectData/EffectDataBase.szs`)){
+            console.log(chalk.red.bold(`SMO dump directory invalid!\nMake sure this folder contains the "Data" folders and make sure the directories.json path doesn't end in a slash`));
+            menu.GenericConfirm();
+            return;
+        }
+    }
+
+    //Check and load ProjectData.json
     if(fs.existsSync(WorkingDirectory+`/ProjectData.json`))
     {
         //Load in required files
@@ -78,7 +104,6 @@ async function SetupCheck() {
     } 
     else
     {
-        console.clear();
         //Open selection about what to do with uninitalized project folder
         InitalizeConfirmation = await menu.InitalizeProject();
         if(InitalizeConfirmation)

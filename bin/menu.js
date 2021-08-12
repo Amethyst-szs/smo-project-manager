@@ -3,6 +3,10 @@ const chalk = require("chalk");
 var fs = require('fs');
 
 module.exports = {
+    GenericConfirm: async function(){
+        input.select(`Got it?`, [`That's right`, `Yes`])
+    },
+
     InitalizeProject: async function(){
         UserInput = await input.select(`This folder isn't initalized, would you like to initalize it?`, [`Yes`, `No`]);
         switch(UserInput){
