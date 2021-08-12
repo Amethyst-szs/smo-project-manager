@@ -24,8 +24,6 @@ Previous Build Time: ${ProjectData.DumpStats.Time}
 Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     
     //Launch main menu
-    const directories = require('../directories.json');
-    console.log(directories)
     MenuSelection = await menu.MainMenu();
     switch (MenuSelection){
         case `Build Project (Full)`:
