@@ -52,6 +52,10 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             await menu.GenericConfirm();
             MainMenuLoop();
             return;
+        case `Information / About`:
+            await menu.Information();
+            MainMenuLoop();
+            return;
         default:
             console.log(`Invalid Selection`);
             await menu.GenericConfirm();
