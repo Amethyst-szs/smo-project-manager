@@ -84,7 +84,7 @@ async function SetupCheck() {
                 "LocalizedDataOverride": ""
             }
         }
-        writeJsonSync(OwnDirectory+'directories.json', { "EditorCore": "", "SMODirectory": "" });
+        writeJsonSync(OwnDirectory+'directories.json', directoriesDefault);
         menu.GenericConfirm();
         return;
     } else {
