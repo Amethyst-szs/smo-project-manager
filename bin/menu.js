@@ -35,6 +35,10 @@ module.exports = {
         }
     },
 
+    TypingWindow: async function(){
+        return await input.text(`Type here: `);
+    },
+
     ConfirmLoadOldProject: async function(){
         UserInput = await input.select(`This project is outdated. Should it load anyway? (May cause issues!)`, [`Yes`, `No`]);
         switch(UserInput){

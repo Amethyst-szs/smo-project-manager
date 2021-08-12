@@ -1,5 +1,6 @@
 var fs = require('fs-extra');
 const chalk = require("chalk");
+const jsonfile = require('jsonfile');
 
 module.exports = {
     CreateFile: function(OwnDirectory){
@@ -11,7 +12,7 @@ module.exports = {
                 "LocalizedDataOverride": ""
             }
         }
-        writeJsonSync(OwnDirectory+'directories.json', directoriesDefault);
+        jsonfile.writeFileSync(OwnDirectory+'directories.json', directoriesDefault);
         return;
     },
     
@@ -29,7 +30,7 @@ module.exports = {
             console.log(chalk.red.bold(`SMO dump directory invalid!\nMake sure this folder contains the "Data" folders and make sure the directories.json path doesn't end in a slash`));
             return true;
         }
-        console.log(`aaa`);
+
         //Make sure that the ObjectDataOverride and LocalizedDataOverride values exist, but they aren't required
         if(!Directories.hasOwnProperty('Optional')){
             console.log(chalk.red.bold(`Your directories file is outdated. Check if anything needs to be added.`));
@@ -42,5 +43,27 @@ module.exports = {
         }
 
         return false;
+    },
+
+    InitalSetup: async function(){
+        const menu = require('./menu');
+        let ReturnObject = {}
+        let ValidProgress = false;
+
+        console.clear()
+        console.log(chalk.yellowBright.bold(`We need to set up some directories first!\nFirst off, what is your EditorCore directory?`));
+        while(ValidProgress == false){
+            let EditorCoreDir = new String;
+            EditorCoreDir = await menu.TypingWindow();
+            for(i=0;i<EditorCoreDir.length;i++){
+                if(EditorCoreDir[i].includes(`\\`)){ EditorCoreDir[i] = `/`; }
+            }
+            console.log(EditorCoreDir+`/EditorCore.exe`);
+            if(fs.existsSync(EditorCoreDir+`/EditorCore.exe`)){
+
+            } else {
+                console.log(chalk.red.bold(`Hmm... that doesn't seem right\nTry again and make sure your path doesn't end in a slash`));
+            }
+        }
     }
 }

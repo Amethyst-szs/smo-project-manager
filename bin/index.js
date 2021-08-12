@@ -75,6 +75,7 @@ async function SetupCheck() {
     if(!fs.existsSync(`${OwnDirectory}/directories.json`)){
         console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
         directorysetup.CreateFile(OwnDirectory);
+        // directorysetup.InitalSetup();
         menu.GenericConfirm();
         return;
     } else {
