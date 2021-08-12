@@ -1,5 +1,6 @@
 const input = require("input");
 const chalk = require("chalk");
+const directories = require('../directories.json');
 var fs = require('fs');
 
 module.exports = {
@@ -32,7 +33,13 @@ module.exports = {
         `Build Project (Quick)`,
         `Build Project (Full)`,
         `Add Template Objects`,
-        `Refresh EditorCore`]);
+        `Refresh EditorCore`,
+        `Add New Language`]);
+    },
+
+    NewLanguage: async function(){
+        AllLangs = fs.readdirSync(directories.SMODirectory+`/LocalizedData/`);
+        return await input.select(`Please select the language to add to the project`, AllLangs);
     },
 
     TemplateObject: async function(OwnDirectory){
