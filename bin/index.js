@@ -24,6 +24,8 @@ Previous Build Time: ${ProjectData.DumpStats.Time}
 Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     
     //Launch main menu
+    const directories = require('../directories.json');
+    console.log(directories)
     MenuSelection = await menu.MainMenu();
     switch (MenuSelection){
         case `Build Project (Full)`:
@@ -47,7 +49,8 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Add New Language`:
             const newlang = require('./newlang');
-            LangSelection = await menu.NewLanguage();
+            const directories = require('../directories.json');
+            LangSelection = await menu.NewLanguage(directories);
             newlang.NewLang(WorkingDirectory, LangSelection, OwnDirectory);
             await menu.GenericConfirm();
             MainMenuLoop();
@@ -67,27 +70,28 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
 async function SetupCheck() {
     //Working Directory Check
     console.log(chalk.cyan.underline(`Checking directory...`));
-
+    
     //Check Directories.json
+    const directorysetup = require('./directorysetup');
+
     if(!fs.existsSync(`${OwnDirectory}/directories.json`)){
         console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
+        directoriesDefault = {
+            "EditorCore": "",
+            "SMODirectory": "",
+            "Optional": {
+                "ObjectDataOverride": "",
+                "LocalizedDataOverride": ""
+            }
+        }
         writeJsonSync(OwnDirectory+'directories.json', { "EditorCore": "", "SMODirectory": "" });
         menu.GenericConfirm();
         return;
     } else {
-        Directories = require('../directories.json');
-
-        //Check if EditorCore directory is invalid
-        if(!fs.existsSync(Directories.EditorCore+`/EditorCore.exe`)){
-            console.log(chalk.red.bold(`EditorCore directory invalid!\nMake sure this folder contains EditorCore.exe and make sure the directories.json path doesn't end in a slash`));
+        isFoundIssue = await directorysetup.IssuesCheck(OwnDirectory);
+        if(isFoundIssue){
             menu.GenericConfirm();
-            return;
-        }
-
-        if(!fs.existsSync(Directories.SMODirectory+`/EffectData/EffectDataBase.szs`)){
-            console.log(chalk.red.bold(`SMO dump directory invalid!\nMake sure this folder contains the "Data" folders and make sure the directories.json path doesn't end in a slash`));
-            menu.GenericConfirm();
-            return;
+            return true;
         }
     }
 

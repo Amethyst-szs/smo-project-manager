@@ -1,7 +1,6 @@
 const input = require("input");
 const chalk = require("chalk");
 const boxen = require('boxen');
-const directories = require('../directories.json');
 var fs = require('fs');
 
 module.exports = {
@@ -56,8 +55,22 @@ module.exports = {
         `Information / About`]);
     },
 
-    NewLanguage: async function(){
-        AllLangs = fs.readdirSync(directories.SMODirectory+`/LocalizedData/`);
+    NewLanguage: async function(directories){
+        let isUseOverride = false;
+        if(Directories.Optional.LocalizedDataOverride != ``){
+            isUseOverride = fs.existsSync(Directories.Optional.LocalizedDataOverride+`/Common/ProjectData.szs`);
+        }
+        
+        console.log(chalk.yellowBright(`Using LocalizedDataOverride: ${isUseOverride}`));
+
+        let AllLangs;
+
+        if(isUseOverride){
+            AllLangs = fs.readdirSync(directories.Optional.LocalizedDataOverride+`/`);
+        } else {
+            AllLangs = fs.readdirSync(directories.SMODirectory+`/LocalizedData/`);
+        }
+
         return await input.select(`Please select the language to add to the project`, AllLangs);
     },
 

@@ -12,6 +12,11 @@ module.exports = {
         console.clear();
         console.log(chalk.yellowBright.bold(`Adding new language to project...`));
 
+        let isUseOverride = false;
+        if(Directories.Optional.LocalizedDataOverride != ``){
+            isUseOverride = fs.existsSync(Directories.Optional.LocalizedDataOverride+`/Common/ProjectData.szs`);
+        }
+
         ///////////////////
         //Check for isssues
         ///////////////////
@@ -43,7 +48,14 @@ module.exports = {
         fs.mkdirSync(`${WorkingDirectory}/project/Text/${LangSelection}/`);
 
         //Create list of all language container files
-        SMOSourceLang = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/`);
+        let SMOSourceLang
+
+        if(isUseOverride){
+            SMOSourceLang = fs.readdirSync(`${directories.Optional.LocalizedDataOverride}/${LangSelection}/MessageData/`);
+        } else {
+            SMOSourceLang = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/`);
+        }
+
         //Remove everything that isn't a .szs
         for(i=0;i<SMOSourceLang.length;i++){
             if (!SMOSourceLang[i].includes(`.szs`)) { SMOSourceLang.splice(i, 1); }
@@ -52,8 +64,13 @@ module.exports = {
         //Copy files
         console.log(chalk.greenBright.bold(`Confirmed valid language to add!`));
         for(i=0;i<SMOSourceLang.length;i++){
-            fs.copyFileSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/${SMOSourceLang[i]}`,
-            `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
+            if(isUseOverride){
+                fs.copyFileSync(`${directories.Optional.LocalizedDataOverride}/${LangSelection}/MessageData/${SMOSourceLang[i]}`,
+                `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
+            } else {
+                fs.copyFileSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/${SMOSourceLang[i]}`,
+                `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
+            }
             console.log(chalk.green.bold(`Added ${SMOSourceLang[i]} from ${LangSelection} to project`));
         }
 
