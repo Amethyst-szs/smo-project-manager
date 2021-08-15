@@ -40,6 +40,11 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Build Project (Quick)`:
             ProjectData = await builder.Build(ProjectData, WorkingDirectory, false, OwnDirectory);
+            if(isFTP) {
+                SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
+                await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
+                await menu.GenericConfirm();
+            }
             MainMenuLoop();
             return;
         case `Connect To Switch - FTP`:
