@@ -49,14 +49,43 @@ module.exports = {
         }
     },
 
-    MainMenu: async function(){
-        return await input.select(`Menu Menu:`, [
+    MainMenu: async function(isFTP){
+        MenuChoices = [
         `Build Project (Quick)`,
         `Build Project (Full)`,
         `Add Template Objects`,
         `Refresh EditorCore`,
         `Add New Language`,
-        `Information / About`]);
+        `Information / About`];
+
+        if(!isFTP){
+            MenuChoices.push(`Connect To Switch - FTP`);
+        } else {
+            MenuChoices.push(`Empty server RomFS`);
+        }
+
+        return await input.select(`Menu Menu:`, MenuChoices);
+    },
+
+    FTPFolderSelection: async function(WorkingDirectory){
+        AllFolders = fs.readdirSync(`${WorkingDirectory}/romfs/`);
+        Selection = input.checkboxes(`Select which folders you want to transfer to your switch:`, AllFolders);
+        return Selection;
+    },
+
+    FTPSelection: async function(){
+        console.clear();
+        console.log(chalk.green.bold(`Switch FTP Connector\nAutomatically send builds to console\n`));
+
+        let AccessObject = {};
+
+        AccessObject.host = await input.text(`Target IP Adress:`);
+        AccessObject.port = await input.text(`Port:`);
+        AccessObject.user = await input.text(`Username:`);
+        AccessObject.password = await input.password(`Password`);
+        AccessObject.secure = false;
+
+        return AccessObject
     },
 
     NewLanguage: async function(directories){

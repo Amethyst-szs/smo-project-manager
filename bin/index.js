@@ -2,36 +2,49 @@
 const fs = require('fs');
 const chalk = require('chalk');
 const boxen = require('boxen');
+const { writeJsonSync } = require('fs-extra');
 
 //Code File Extensions
 const menu = require('./menu');
 const builder = require('./builder');
-const { writeJsonSync } = require('fs-extra');
+const ftpconnector = require('./ftpconnector');
 
 //Variable Setup
 let OwnDirectory = __dirname.slice(0,__dirname.length-3);
 let WorkingDirectory = process.cwd();
 let ProjectData;
+let FTPAccessObject;
+let isFTP = false;
 
 async function MainMenuLoop() {
     //Prepare console
     console.clear();
     console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`), {margin: 1, borderStyle: 'double'}));
-
+    if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected to ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
     console.log(chalk.green.bold(`
 Previous Build Type: ${ProjectData.DumpStats.Type}
 Previous Build Time: ${ProjectData.DumpStats.Time}
 Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     
     //Launch main menu
-    MenuSelection = await menu.MainMenu();
+    MenuSelection = await menu.MainMenu(isFTP);
     switch (MenuSelection){
         case `Build Project (Full)`:
             ProjectData = await builder.Build(ProjectData, WorkingDirectory, true, OwnDirectory);
+            if(isFTP) {
+                SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
+                await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
+                await menu.GenericConfirm();
+            }
             MainMenuLoop();
             return;
         case `Build Project (Quick)`:
             ProjectData = await builder.Build(ProjectData, WorkingDirectory, false, OwnDirectory);
+            MainMenuLoop();
+            return;
+        case `Connect To Switch - FTP`:
+            FTPAccessObject = await menu.FTPSelection();
+            isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
             MainMenuLoop();
             return;
         case `Add Template Objects`:
@@ -55,6 +68,11 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Information / About`:
             await menu.Information();
+            MainMenuLoop();
+            return;
+        case `Empty server RomFS`:
+            await ftpconnector.FTPClearRomfs(FTPAccessObject);
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         default:
