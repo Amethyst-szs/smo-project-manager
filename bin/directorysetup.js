@@ -12,12 +12,12 @@ module.exports = {
                 "LocalizedDataOverride": ""
             }
         }
-        jsonfile.writeFileSync(OwnDirectory+'directories.json', directoriesDefault);
+        jsonfile.writeFileSync(OwnDirectory+'save_data/directories.json', directoriesDefault);
         return;
     },
     
     IssuesCheck: function(OwnDirectory){
-        Directories = require('../directories.json');
+        Directories = require('../save_data/directories.json');
 
         //Check if EditorCore directory is invalid
         if(!fs.existsSync(Directories.EditorCore+`/EditorCore.exe`)){
@@ -38,32 +38,10 @@ module.exports = {
                 "ObjectDataOverride": "",
                 "LocalizedDataOverride": ""
             }
-            fs.writeJsonSync(OwnDirectory+'directories.json', Directories);
+            fs.writeJsonSync(OwnDirectory+'save_data/directories.json', Directories);
             return true;
         }
 
         return false;
-    },
-
-    InitalSetup: async function(){
-        const menu = require('./menu');
-        let ReturnObject = {}
-        let ValidProgress = false;
-
-        console.clear()
-        console.log(chalk.yellowBright.bold(`We need to set up some directories first!\nFirst off, what is your EditorCore directory?`));
-        while(ValidProgress == false){
-            let EditorCoreDir = new String;
-            EditorCoreDir = await menu.TypingWindow();
-            for(i=0;i<EditorCoreDir.length;i++){
-                if(EditorCoreDir[i].includes(`\\`)){ EditorCoreDir[i] = `/`; }
-            }
-            console.log(EditorCoreDir+`/EditorCore.exe`);
-            if(fs.existsSync(EditorCoreDir+`/EditorCore.exe`)){
-
-            } else {
-                console.log(chalk.red.bold(`Hmm... that doesn't seem right\nTry again and make sure your path doesn't end in a slash`));
-            }
-        }
     }
 }

@@ -1,6 +1,6 @@
 var fs = require('fs-extra');
 const chalk = require("chalk");
-const Directories = require('../directories.json');
+const Directories = require('../save_data/directories.json');
 
 module.exports = {
     Refresh: function(WorkingDirectory){

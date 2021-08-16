@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 const fs = require('fs-extra');
-const directories = require('../directories.json');
+const directories = require('../save_data/directories.json');
 const menu = require('./menu');
 const { execSync } = require('child_process');
 

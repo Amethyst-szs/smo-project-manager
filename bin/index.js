@@ -48,7 +48,7 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             MainMenuLoop();
             return;
         case `Connect To Switch - FTP`:
-            FTPAccessObject = await menu.FTPSelection();
+            FTPAccessObject = await menu.FTPSelection(OwnDirectory);
             isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
             MainMenuLoop();
             return;
@@ -65,7 +65,7 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Add New Language`:
             const newlang = require('./newlang');
-            const directories = require('../directories.json');
+            const directories = require('../save_data/directories.json');
             LangSelection = await menu.NewLanguage(directories);
             newlang.NewLang(WorkingDirectory, LangSelection, OwnDirectory);
             await menu.GenericConfirm();
@@ -95,10 +95,9 @@ async function SetupCheck() {
     //Check Directories.json
     const directorysetup = require('./directorysetup');
 
-    if(!fs.existsSync(`${OwnDirectory}/directories.json`)){
+    if(!fs.existsSync(`${OwnDirectory}/save_data/directories.json`)){
         console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
         directorysetup.CreateFile(OwnDirectory);
-        // directorysetup.InitalSetup();
         menu.GenericConfirm();
         return;
     } else {
@@ -114,7 +113,7 @@ async function SetupCheck() {
     {
         //Load in required files
         ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
-        ProgramVersion = require('../version.json');
+        ProgramVersion = require('../save_data/version.json');
         
         //Check for project updates
         if(ProjectData.Version == ProgramVersion.Version){

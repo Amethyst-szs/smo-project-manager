@@ -1,7 +1,7 @@
 const input = require("input");
 const chalk = require("chalk");
 const boxen = require('boxen');
-var fs = require('fs');
+var fs = require('fs-extra');
 
 module.exports = {
     GenericConfirm: async function(){
@@ -73,9 +73,41 @@ module.exports = {
         return Selection;
     },
 
-    FTPSelection: async function(){
+    FTPSelection: async function(OwnDirectory){
+        //Setup command line
         console.clear();
         console.log(chalk.green.bold(`Switch FTP Connector\nAutomatically send builds to console\n`));
+        
+        //Check if the profiles.json file already exists
+        if(fs.existsSync(`${OwnDirectory}save_data/ftp_profiles.json`)){
+            //Read in the JSON file
+            Profiles = fs.readJSONSync(`${OwnDirectory}save_data/ftp_profiles.json`);
+
+            if(Profiles.saves.length > 0){
+                //Confirmed that there is a profile, now open a selection dialog.
+                SelectionMenu = [];
+                //Create an array of the labels
+                for(i=0;i<Profiles.saves.length;i++){
+                    SelectionMenu.push(Profiles.saves[i].label);
+                }
+                SelectionMenu.push(`Create new profile`);
+                SelectionChoice = await input.select(`Select a profile to connect to:`, SelectionMenu);
+
+                //Only continue down the profile loading path if they didn't choose to make a new profile
+                if(SelectionChoice != `Create new profile`){
+                    ReturnObject = {};
+                    for(i=0;i<SelectionMenu.length-1;i++){
+                        if(SelectionChoice == Profiles.saves[i].label){
+                            ReturnObject = Profiles.saves[i];
+                            return ReturnObject;
+                        }
+                    }
+                }
+            }
+        } else {
+            //Create json file if it doesn't exist already, then move on.
+            fs.writeJsonSync(`${OwnDirectory}save_data/ftp_profiles.json`, {saves: []});
+        }
 
         let AccessObject = {};
 
@@ -84,8 +116,16 @@ module.exports = {
         AccessObject.user = await input.text(`Username:`);
         AccessObject.password = await input.password(`Password`);
         AccessObject.secure = false;
+        AccessObject.label = `NA`;
 
-        return AccessObject
+        if(await input.confirm(`Should this connection be saved?`)) {
+            Profiles = fs.readJSONSync(`${OwnDirectory}save_data/ftp_profiles.json`);
+            AccessObject.label = `${AccessObject.user} - ${AccessObject.host}:${AccessObject.port}`;
+            Profiles.saves.push(AccessObject);
+            fs.writeJSONSync(`${OwnDirectory}save_data/ftp_profiles.json`, Profiles);
+        }
+
+        return AccessObject;
     },
 
     NewLanguage: async function(directories){

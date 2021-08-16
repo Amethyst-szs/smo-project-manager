@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 const jsonfile = require('jsonfile');
-const version = require('../version.json')
+const version = require('../save_data/version.json')
 var fs = require('fs');
 
 module.exports = {
