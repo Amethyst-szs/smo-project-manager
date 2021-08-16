@@ -36,6 +36,9 @@ module.exports = {
         fs.mkdirSync('project/Stages');
         fs.mkdirSync('project/CubeMaps');
         fs.mkdirSync('project/Sound');
+        fs.mkdirSync('project/Sound/stream');
+        fs.mkdirSync('project/Sound/prefetch');
+        fs.mkdirSync('project/Sound');
         fs.mkdirSync('project/Effects');
         fs.mkdirSync('project/UI');
         fs.mkdirSync('project/Text');

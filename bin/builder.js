@@ -166,6 +166,9 @@ module.exports = {
                     fs.moveSync(`${WorkingDirectory}/romfs/SoundData/${SoundDataContents[i]}`,
                     `${WorkingDirectory}/romfs/SoundData/stream/${SoundDataContents[i]}`);
                 }
+                if(SoundDataContents[i].includes(`.bfstp`)){
+                    fs.removeSync(`${WorkingDirectory}/romfs/SoundData/${SoundDataContents[i]}`);
+                }
             }
         }
 
