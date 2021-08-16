@@ -20,7 +20,7 @@ async function MainMenuLoop() {
     //Prepare console
     console.clear();
     console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`), {margin: 1, borderStyle: 'double'}));
-    if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected to ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
+    if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected as ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
     console.log(chalk.green.bold(`
 Previous Build Type: ${ProjectData.DumpStats.Type}
 Previous Build Time: ${ProjectData.DumpStats.Time}
