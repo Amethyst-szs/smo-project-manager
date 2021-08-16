@@ -1,6 +1,6 @@
 @echo off
 
-if exist node_modules (
+if exist %0\..\node_modules (
   title SMO Project Manager
   node %0\..\bin\index.js
 ) else (
