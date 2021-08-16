@@ -62,6 +62,7 @@ module.exports = {
             MenuChoices.push(`Connect To Switch - FTP`);
         } else {
             MenuChoices.push(`Empty server RomFS`);
+            MenuChoices.push(`Disconnect FTP`);
         }
 
         return await input.select(`Menu Menu:`, MenuChoices);

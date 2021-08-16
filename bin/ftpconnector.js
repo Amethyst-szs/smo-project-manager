@@ -9,7 +9,6 @@ let isFTPValid = false;
 
 module.exports = {
     FTPSyncCheck: async function(FTPAccessObject){
-        console.log(FTPAccessObject);
         const client = new ftp.Client()
         client.ftp.verbose = false
         try {

@@ -47,11 +47,6 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             }
             MainMenuLoop();
             return;
-        case `Connect To Switch - FTP`:
-            FTPAccessObject = await menu.FTPSelection(OwnDirectory);
-            isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
-            MainMenuLoop();
-            return;
         case `Add Template Objects`:
             SelectedObjects = await menu.TemplateObject(OwnDirectory);
             const template = require('./template');
@@ -75,9 +70,19 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             await menu.Information();
             MainMenuLoop();
             return;
+        case `Connect To Switch - FTP`:
+            FTPAccessObject = await menu.FTPSelection(OwnDirectory);
+            isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
+            MainMenuLoop();
+            return;
         case `Empty server RomFS`:
             await ftpconnector.FTPClearRomfs(FTPAccessObject);
             await menu.GenericConfirm();
+            MainMenuLoop();
+            return;
+        case `Disconnect FTP`:
+            isFTP = false;
+            FTPAccessObject = {};
             MainMenuLoop();
             return;
         default:
