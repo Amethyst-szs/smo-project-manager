@@ -9,10 +9,10 @@ module.exports = {
         JSONObject = {
             Version: version.Version,
             DumpStats: {
-                Time: 0,
+                Time: `N/A`,
                 Amount: 0,
                 isUndumped: true,
-                Type: null
+                Type: `N/A`
             }
         }
 
