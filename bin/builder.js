@@ -87,6 +87,11 @@ module.exports = {
 
         console.log(`Transporting CubeMaps...`);
 
+        //Verify ObjectData directory
+        if(!fs.existsSync(`${WorkingDirectory}/romfs/ObjectData`)){
+            fs.mkdirSync(`${WorkingDirectory}/romfs/ObjectData`);
+        }
+
         //Read the CubeMap directory, then copy each file to the ObjectData folder
         CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
         for(CurrentFile=0;CurrentFile<CubeMapContents.length;CurrentFile++){
