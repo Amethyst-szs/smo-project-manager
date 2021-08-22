@@ -186,7 +186,7 @@ module.exports = {
             }
 
             //Check at end if SoundData is junk
-            if(SoundDataContents.length <= 1){
+            if(SoundDataContents.length < 1){
                 fs.removeSync(`${WorkingDirectory}/romfs/SoundData/`);
             }
         }
