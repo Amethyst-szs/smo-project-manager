@@ -26,7 +26,14 @@ module.exports = {
         //Reset LocalizedData if a full build
         if(FullBuild) {
             fs.removeSync(`${WorkingDirectory}/romfs/LocalizedData/`);
-            fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData/`);
+
+            //Load all language folders from the project folder
+            TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
+
+            //Verify LocalizedData directory
+            if(TextContents.length > 0){
+                fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData`);
+            }
         }
 
         //////////////////////////
@@ -87,13 +94,14 @@ module.exports = {
 
         console.log(`Transporting CubeMaps...`);
 
+        //Read the CubeMap directory, then copy each file to the ObjectData folder
+        CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
+
         //Verify ObjectData directory
-        if(!fs.existsSync(`${WorkingDirectory}/romfs/ObjectData`)){
+        if(!fs.existsSync(`${WorkingDirectory}/romfs/ObjectData` && CubeMapContents.length > 0)){
             fs.mkdirSync(`${WorkingDirectory}/romfs/ObjectData`);
         }
 
-        //Read the CubeMap directory, then copy each file to the ObjectData folder
-        CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
         for(CurrentFile=0;CurrentFile<CubeMapContents.length;CurrentFile++){
             console.log(CubeMapContents[CurrentFile]);
 
@@ -107,6 +115,7 @@ module.exports = {
 
         //Load all language folders from the project folder
         TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
+
         for(CurrentLang=0;CurrentLang<TextContents.length;CurrentLang++){
             //If not a full build, skip text building
             if(!FullBuild) {continue;}
@@ -174,6 +183,11 @@ module.exports = {
                 if(SoundDataContents[i].includes(`.bfstp`)){
                     fs.removeSync(`${WorkingDirectory}/romfs/SoundData/${SoundDataContents[i]}`);
                 }
+            }
+
+            //Check at end if SoundData is junk
+            if(SoundDataContents.length <= 1){
+                fs.removeSync(`${WorkingDirectory}/romfs/SoundData/`);
             }
         }
 
