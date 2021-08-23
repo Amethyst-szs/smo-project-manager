@@ -13,7 +13,7 @@ When starting the program, make sure to run "init.bat" to install dependencies f
 -Automatically refresh EditorCore with custom models  
 -Keep text data uncompressed, the program automatically compresses the files with SarcTool on build  
 -Use template objects  
--Add new languages in your project with the push of a button
+-Add new languages in your project with the push of a button  
 -Send project to console over FTP (Recommened to use sys-ftpd-light on the console side!)
 
 ### Adding to your right click menu
