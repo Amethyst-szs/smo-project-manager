@@ -98,7 +98,7 @@ module.exports = {
         CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
 
         //Verify ObjectData directory
-        if(!fs.existsSync(`${WorkingDirectory}/romfs/ObjectData` && CubeMapContents.length > 0)){
+        if(fs.existsSync(`${WorkingDirectory}/romfs/ObjectData` == false && CubeMapContents.length > 0)){
             fs.mkdirSync(`${WorkingDirectory}/romfs/ObjectData`);
         }
 
