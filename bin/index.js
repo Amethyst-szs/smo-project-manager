@@ -146,6 +146,7 @@ async function SetupCheck() {
                     FTPAccessObject = await menu.FTPSelection(OwnDirectory);
                     isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
                     if(isFTP){
+                        await ftpconnector.FTPClearRomfs(FTPAccessObject);
                         SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
                         await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
                         await menu.GenericConfirm();
