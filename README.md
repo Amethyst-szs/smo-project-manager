@@ -14,6 +14,7 @@ When starting the program, make sure to run "init.bat" to install dependencies f
 -Keep text data uncompressed, the program automatically compresses the files with SarcTool on build  
 -Use template objects  
 -Add new languages in your project with the push of a button
+-Send project to console over FTP (Recommened to use sys-ftpd-light on the console side!)
 
 ### Adding to your right click menu
 If you want to quickly be able to open a project on windows, open the Registry Editor. Inside here, go through the directories: `HKEY_CLASSES_ROOT/Directory/Background/shell/`. Add a new key called "SMO Project Manager". Inside this key, add a new key called "command". Add a new string value to this key called "(Default)" with the value pointing to your "run.bat" file, like this `D:\GitHub\Repos\smo-project-manager/run.bat`.  
