@@ -35,6 +35,16 @@ module.exports = {
         }
     },
 
+    SendUninitProjectToSwitch: async function(){
+        UserInput = await input.select(`This folder isn't initalized, but there is a romfs folder.\nWould you like to send it to the switch with FTP?`, [`Yes`, `No`]);
+        switch(UserInput){
+            case `Yes`:
+                return true;
+            case `No`:
+                return false;
+        }
+    },
+
     TypingWindow: async function(){
         return await input.text(`Type here: `);
     },
@@ -70,6 +80,7 @@ module.exports = {
 
     FTPFolderSelection: async function(WorkingDirectory){
         AllFolders = fs.readdirSync(`${WorkingDirectory}/romfs/`);
+        if(AllFolders.length <= 1) { return AllFolders; }
         Selection = input.checkboxes(`Select which folders you want to transfer to your switch:`, AllFolders);
         return Selection;
     },

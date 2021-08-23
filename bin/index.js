@@ -138,6 +138,26 @@ async function SetupCheck() {
     } 
     else
     {
+        //If the folder already contains a romfs, ask if you want to send it to the switch
+        WorkingDirectoryContents = fs.readdirSync(`${WorkingDirectory}`);
+        for(i=0;i<WorkingDirectoryContents.length;i++){
+            if(WorkingDirectoryContents[i] == `romfs`){
+                if(await menu.SendUninitProjectToSwitch()){
+                    FTPAccessObject = await menu.FTPSelection(OwnDirectory);
+                    isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
+                    if(isFTP){
+                        SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
+                        await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
+                        await menu.GenericConfirm();
+                        return;
+                    }
+                } else {
+                    console.clear();
+                    console.log(chalk.cyan.underline(`Checking directory...`));
+                }
+            }
+        }
+
         //Open selection about what to do with uninitalized project folder
         InitalizeConfirmation = await menu.InitalizeProject();
         if(InitalizeConfirmation)
