@@ -66,6 +66,7 @@ module.exports = {
         `Add Template Objects`,
         `Refresh EditorCore`,
         `Add New Language`,
+        `Generate Music`,
         `Information / About`];
 
         if(!isFTP){

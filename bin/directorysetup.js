@@ -41,6 +41,14 @@ module.exports = {
             fs.writeJsonSync(OwnDirectory+'save_data/directories.json', Directories);
             return true;
         }
+        
+        //If the property PluginWaveConverter doesn't exist, add it
+        if(!Directories.hasOwnProperty('PluginWaveConverter')){
+            console.log(chalk.red.bold(`Your directories file is outdated. Check if anything needs to be added.`));
+            Directories.PluginWaveConverter = "";
+            fs.writeJsonSync(OwnDirectory+'save_data/directories.json', Directories);
+            return true;
+        }
 
         return false;
     }

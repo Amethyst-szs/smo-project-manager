@@ -66,6 +66,12 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             await menu.GenericConfirm();
             MainMenuLoop();
             return;
+        case `Generate Music`:
+            const wavetool = require('./wavetool');
+            const directories = require('../save_data/directories.json');
+            wavetool.Main(directories);
+            MainMenuLoop();
+            return;
         case `Information / About`:
             await menu.Information();
             MainMenuLoop();
