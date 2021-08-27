@@ -37,18 +37,19 @@ module.exports = {
                     Samples = wav.getSamples()[0];
                     Samples = Samples.toString();
                     console.log(chalk.green.bold(`Loaded .wav file! Processing file...`));
-                    console.log(Samples);
 
                     //Start searching for loop timings
                     while(isSearchingLoop){
                         TestGround = Samples.slice(CurrentSamplePoint, CurrentSamplePoint+999);
                         let Testa = new Float64Array;
                         let Tests = new String;
-                        FoundRepeat = Samples.slice(CurrentSamplePoint+1000, Samples.length).includes(TestGround);
-                        console.log(FoundRepeat, CurrentSamplePoint, Samples.length, Samples.slice(CurrentSamplePoint+1000, Samples.length).length);
-                        CurrentSamplePoint += 1000;
+                        FoundRepeat = Samples.slice(CurrentSamplePoint+999, Samples.length).includes(TestGround);
+                        console.log(FoundRepeat, CurrentSamplePoint);
+                        CurrentSamplePoint += 999;
                         if(FoundRepeat) { isSearchingLoop=false };
                         if(CurrentSamplePoint > Samples.length) { isSearchingLoop=false }; 
+                        console.log(TestGround);
+                        // isSearchingLoop = false;
                     }
 
                 });
