@@ -2,6 +2,7 @@
 const fs = require('fs');
 const chalk = require('chalk');
 const boxen = require('boxen');
+const input = require('input');
 const { writeJsonSync } = require('fs-extra');
 
 //Code File Extensions
@@ -68,8 +69,14 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Generate Music`:
             const wavetool = require('./wavetool');
-            const directories = require('../save_data/directories.json');
-            wavetool.Main(directories);
+
+            //Let the user select which sound file they want
+            AllSourceFiles = fs.readdirSync(`${WorkingDirectory}/project/AllUserContent/Sounds/`);
+            while(AllSourceFiles.length <= 1){ AllSourceFiles.push(`None`); }
+            TargetFile = await input.select(`Please select your audio file from AllUserContent/Sounds/`, AllSourceFiles);
+
+            wavetool.Main(WorkingDirectory, TargetFile);
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         case `Information / About`:
