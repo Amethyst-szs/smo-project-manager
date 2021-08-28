@@ -26,7 +26,7 @@ async function MainMenuLoop() {
 Previous Build Type: ${ProjectData.DumpStats.Type}
 Previous Build Time: ${ProjectData.DumpStats.Time}
 Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
-    
+
     //Launch main menu
     MenuSelection = await menu.MainMenu(isFTP);
     switch (MenuSelection){
@@ -35,8 +35,8 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             if(isFTP) {
                 SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
                 await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
-                await menu.GenericConfirm();
             }
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         case `Build Project (Quick)`:
@@ -44,8 +44,8 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             if(isFTP) {
                 SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
                 await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
-                await menu.GenericConfirm();
             }
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         case `Add Template Objects`:
@@ -57,6 +57,7 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
         case `Refresh EditorCore`:
             const editorcore = require('./editorcore');
             editorcore.Refresh(WorkingDirectory);
+            await menu.GenericConfirm();
             MainMenuLoop();
             return;
         case `Add New Language`:

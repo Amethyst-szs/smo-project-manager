@@ -6,6 +6,7 @@ module.exports = {
     Refresh: function(WorkingDirectory){
         //Notify Console
         console.log(chalk.yellow.bold(`Refreshing EditorCore...`));
+        console.time(`Duration`);
 
         //Check if ObjectDataOverride is active and correct
         let isUseOverride = false;
@@ -34,5 +35,7 @@ module.exports = {
         }
 
         fs.removeSync(`${Directories.EditorCore}/OdysseyModels/`);
+
+        console.timeEnd(`Duration`);
     }
 }

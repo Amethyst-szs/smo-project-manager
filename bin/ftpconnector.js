@@ -7,6 +7,12 @@ const menu = require('./menu');
 let SMOPath = `/atmosphere/contents/0100000000010000/romfs`;
 let isFTPValid = false;
 
+function UpdateConsole(Label, Progress, TotalTasks){
+    console.clear();
+    console.log(chalk.red.bold(`Transfering files to console...\nDon't close the program, alter any files, or turn off the console\n`));
+    menu.ProgressBar(Label, Progress, TotalTasks);
+}
+
 module.exports = {
     FTPSyncCheck: async function(FTPAccessObject){
         const client = new ftp.Client()
@@ -35,6 +41,8 @@ module.exports = {
     FTPTransferProject: async function(WorkingDirectory, SelectedFolders, FTPAccessObject){
         if(SelectedFolders == []) { return; }
 
+        console.time(`Duration`);
+
         const client = new ftp.Client()
         client.ftp.verbose = false
         try {
@@ -42,10 +50,17 @@ module.exports = {
             console.log(chalk.greenBright.bold.underline(`Successfully connected! Starting transfer...`));
             //Already confirmed directory exists during sync process, just enter that directory
             await client.cd(SMOPath);
+
             if(await client.pwd() == SMOPath){
                 console.log(chalk.greenBright.bold.underline(`Entered ${SMOPath} on server`));
                 //Get a list of all files in SMOPath
                 ExistingFolders = await client.list(`${SMOPath}`);
+                TotalTasks = SelectedFolders.length+1;
+
+                client.trackProgress(info => {
+                    UpdateConsole(`Sending ${SelectedFolders[i]} to server...\n${info.name} - ${info.bytes}`, i+1, TotalTasks);
+                })
+
                 for(i=0;i<SelectedFolders.length;i++){
                     //Before uploading contents of this selected folder to server, check if the current one needs to be deleted
                     for(i2=0;i2<ExistingFolders.length;i2++){
@@ -54,22 +69,26 @@ module.exports = {
                         }
                     }
                     //Now the current selected folder can be uploaded
-                    console.log(`Uploading ${SelectedFolders[i]} to server...`);
+                    UpdateConsole(`Sending ${SelectedFolders[i]} to server...`, i+1, TotalTasks);
                     await client.ensureDir(`${SMOPath}/${SelectedFolders[i]}`);
                     await client.uploadFromDir(`${WorkingDirectory}/romfs/${SelectedFolders[i]}`);
                     await client.cdup();
                 }
-                console.log(chalk.cyanBright.bold(`Successful transfer!`));
+                UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }
         }
         catch(err) {
             console.log(chalk.redBright.bold.underline(`Error!`))
             console.log(err)
         }
+        client.trackProgress()
+        console.timeEnd(`Duration`);
         client.close()
     },
 
     FTPClearRomfs: async function(FTPAccessObject){
+        console.time(`Duration`);
+
         const client = new ftp.Client()
         client.ftp.verbose = false
         try {
@@ -77,21 +96,25 @@ module.exports = {
             console.log(chalk.greenBright.bold.underline(`Successfully connected! Will delete RomFS contents shortly...`));
             //Already confirmed directory exists during sync process, just enter that directory
             await client.cd(SMOPath);
+            
             if(await client.pwd() == SMOPath){
                 console.log(chalk.greenBright.bold.underline(`Entered ${SMOPath} on server`));
                 //Get a list of all files in SMOPath
                 ExistingFolders = await client.list(`${SMOPath}`);
+                TotalTasks = ExistingFolders.length+1;
                 for(i=0;i<ExistingFolders.length;i++){
                     await client.removeDir(`${SMOPath}/${ExistingFolders[i].name}`);
-                    console.log(`Succesfully deleted ${ExistingFolders[i].name}`);
+                    UpdateConsole(`Deleting ${ExistingFolders[i].name} on server...`, i+1, TotalTasks);
                 }
-                console.log(chalk.cyanBright.bold(`Successfully cleared RomFS folder contents`));
+
+                UpdateConsole(`Emptied RomFS on server!`, TotalTasks, TotalTasks);
             }
         }
         catch(err) {
             console.log(chalk.redBright.bold.underline(`Error!`))
             console.log(err)
         }
+        console.timeEnd(`Duration`);
         client.close()
     }
 }

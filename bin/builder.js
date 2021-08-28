@@ -3,12 +3,21 @@ const fs = require('fs-extra');
 const jsonfile = require('jsonfile');
 const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
+const menu = require('./menu');
+
+let TotalTasks = 6;
+
+function UpdateConsole(Label, Progress){
+    console.clear();
+    console.log(chalk.red.bold(`Building project...\nDon't close the program or alter any files!\n`));
+    menu.ProgressBar(Label, Progress, TotalTasks);
+}
 
 module.exports = {
     Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory){
         //Console setup
-        console.clear();
-        console.log(chalk.red.bold(`Building project...\nDon't close the program or alter any files!\n`));
+        console.time(`Duration`);
+        UpdateConsole(`Preparing build...`, 0); //Task 0
 
         //Prepare arrays (DOES NOT INCLUDES TEXT OR CUBEMAP FOLDERS, THOSE ARE HANDLED SEPERATELY)
         SMOFolders = [`EffectData`, `EventData`, `LayoutData`, `MovieData`, `ObjectData`, `ShaderData`, `SoundData`, `StageData`, `SystemData`];
@@ -18,7 +27,7 @@ module.exports = {
         //Delete previous build
         ///////////////////////
 
-        console.log(`Deleting previous build...`);
+        UpdateConsole(`Removing previous build...`, 1);
         for(i=0;i<SMOFolders.length;i++){
             fs.removeSync(`${WorkingDirectory}/romfs/${SMOFolders[i]}`);
         }
@@ -40,7 +49,7 @@ module.exports = {
         //Recursive object copying
         //////////////////////////
 
-        console.log(`Reformatting project into RomFS directories...`);
+        UpdateConsole(`Creating RomFS folder from project...`, 2);
 
         for(CurrentFolder=0;CurrentFolder<ProjectFolders.length;CurrentFolder++){
             //Get a list of all files and sub-folders inside this directory
@@ -48,9 +57,6 @@ module.exports = {
 
             //If this folder is empty, skip it and move on to the next
             if(FolderContents.length == 0) { continue; }
-
-            //Console log progress
-            console.log(`${ProjectFolders[CurrentFolder]} ---> ${SMOFolders[CurrentFolder]}`);
 
             //Start by making the target folder in romfs as prep for the file copying
             fs.mkdirSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`);
@@ -92,7 +98,7 @@ module.exports = {
         //Copy CubeMaps to ObjectData
         /////////////////////////////
 
-        console.log(`Transporting CubeMaps...`);
+        UpdateConsole(`Moving CubeMaps into project...`, 3);
 
         //Read the CubeMap directory, then copy each file to the ObjectData folder
         CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
@@ -103,8 +109,6 @@ module.exports = {
         }
 
         for(CurrentFile=0;CurrentFile<CubeMapContents.length;CurrentFile++){
-            console.log(CubeMapContents[CurrentFile]);
-
             fs.copyFileSync(`${WorkingDirectory}/project/CubeMaps/${CubeMapContents[CurrentFile]}`,
             `${WorkingDirectory}/romfs/ObjectData/${CubeMapContents[CurrentFile]}`);
         }
@@ -112,6 +116,8 @@ module.exports = {
         /////////////////
         //Build Text Data
         /////////////////
+
+        if(FullBuild) { UpdateConsole(`Building text data... (Full Build Only)`, 4); }
 
         //Load all language folders from the project folder
         TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
@@ -122,9 +128,6 @@ module.exports = {
 
             //If folder is "Common" handle differently
             if(TextContents[CurrentLang] == `Common`){
-                //Alert user that common language folder is being copied
-                console.log(`"Common" text folder found! Copying...`);
-
                 //Make common directory in romfs
                 fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData/Common/`);
 
@@ -148,7 +151,6 @@ module.exports = {
                       return;
                     }
                 });
-                console.log(`Completed SarcTool compression of ${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}`);
 
                 //Copy this compressed file over to the romfs
                 fs.copyFileSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}.szs`,
@@ -164,7 +166,7 @@ module.exports = {
         //////////////////////////
 
         //Alert console
-        console.log(`Cleaning up SoundData folder...`);
+        UpdateConsole(`Cleaning up SoundData...`, 5);
 
         //Read all files in SoundData folder, but first make sure the SoundData folder exists
         isSoundDataFolderExist = fs.existsSync(`${WorkingDirectory}/romfs/SoundData/`);
@@ -196,7 +198,7 @@ module.exports = {
         /////////////////////////
         
         //Alert console
-        console.log(chalk.green.bold(`Complete! Updating Project Information...`));
+        UpdateConsole(`Updating project information...`, 6);
 
         //Update time
         Time = new Date();
@@ -218,6 +220,9 @@ module.exports = {
 
         //Write changes to file
         jsonfile.writeFileSync(WorkingDirectory+`/ProjectData.json`, ProjectData);
+
+        //Log duration
+        console.timeEnd(`Duration`);
 
         //Return
         return ProjectData;

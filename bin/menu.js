@@ -163,5 +163,15 @@ module.exports = {
     TemplateObject: async function(OwnDirectory){
         AllObjects = fs.readdirSync(`${OwnDirectory}templateszs/`);
         return await input.checkboxes(`Select all templates you would like:`, AllObjects);
+    },
+
+    ProgressBar: function(Label, Current, Target){
+        console.log(chalk.cyanBright.bold(`${Label}\n${Current} tasks complete of ${Target}\n${Current/Target*100}%`));
+        let TerminalSize = parseInt(process.stdout.columns/2);
+        let Result = parseInt(TerminalSize*(Current/Target));
+        let BarString = Array(Result).fill(`▓`).concat(Array(TerminalSize-Result).fill(`░`));
+        BarString = BarString.join(``);
+        console.log(chalk.green.bold(BarString));
+        return;
     }
 }
