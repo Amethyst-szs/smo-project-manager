@@ -5,7 +5,7 @@ const menu = require('./menu');
 var fs = require('fs-extra');
 
 module.exports = {
-    Main: async function(WorkingDirectory, TargetFile){
+    Main: function(WorkingDirectory, TargetFile){
         // console.clear();
 
         //Verify that the WaveConverter plugin exists
@@ -22,9 +22,10 @@ module.exports = {
 
         //Setup variables
         let StartLoopPoint = 0;
-        let EndLoopPoint = 1;
-        let CurrentSamplePoint = 0;
+        let EndLoopPoint = 0;
+        let CurrentSamplePoint = 264000;
         let Samples = [];
+        let SongLength = 0;
         let isSearchingLoop = true;
 
         //Read thie TargetFile and return a buffer
@@ -35,22 +36,33 @@ module.exports = {
                     wav = new wavefile.WaveFile();
                     wav.fromBuffer(buffer);
                     Samples = wav.getSamples()[0];
-                    Samples = Samples.toString();
+                    SongLength = Samples.length;
                     console.log(chalk.green.bold(`Loaded .wav file! Processing file...`));
 
                     //Start searching for loop timings
-                    while(isSearchingLoop){
-                        TestGround = Samples.slice(CurrentSamplePoint, CurrentSamplePoint+999);
-                        let Testa = new Float64Array;
-                        let Tests = new String;
-                        FoundRepeat = Samples.slice(CurrentSamplePoint+999, Samples.length).includes(TestGround);
-                        console.log(FoundRepeat, CurrentSamplePoint);
-                        CurrentSamplePoint += 999;
-                        if(FoundRepeat) { isSearchingLoop=false };
-                        if(CurrentSamplePoint > Samples.length) { isSearchingLoop=false }; 
-                        console.log(TestGround);
-                        // isSearchingLoop = false;
+                    let s = new Set();
+
+                    let Segment = [];
+
+                    let blockSize = 20;
+
+                    for (let i = 0; i < SongLength; i++) {
+                        let sl = Samples.slice(i, i + blockSize);
+                        if (sl.length < blockSize) {
+                            break;
+                        }
+                        let x = sl.join(',');
+                        if (s.has(x)) {
+                            console.log(chalk.green.bold.underline(`Success`));
+                            console.log(i);
+                            console.log('S: ', [...s]);
+                            break;
+                        }
+                        Segment.push(Samples[i]);
+                        s.add(x);
                     }
+
+                    console.log("Found it: ", Segment);
 
                 });
             });
