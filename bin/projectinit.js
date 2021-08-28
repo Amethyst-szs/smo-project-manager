@@ -1,9 +1,24 @@
 const chalk = require("chalk");
 const jsonfile = require('jsonfile');
 const version = require('../save_data/version.json')
-var fs = require('fs');
+var fs = require('fs-extra');
 
 module.exports = {
+    UpdateProject: function(WorkingDirectory, CurrentVersion){
+        JSONObject = fs.readJSONSync(`${WorkingDirectory}/ProjectData.json`);
+
+        //Songs Update
+        if(!JSONObject.hasOwnProperty(`songs`)){
+            JSONObject.songs = {};
+        }
+
+        //Set ProjectData to current version and save
+        JSONObject.Version = parseInt(CurrentVersion, 10);
+        fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject);
+
+        return;
+    },
+
     CreateProject: async function(WorkingDirectory){
         //Create JSON
         JSONObject = {
@@ -13,7 +28,8 @@ module.exports = {
                 Amount: 0,
                 isUndumped: true,
                 Type: `N/A`
-            }
+            },
+            Songs: {}
         }
 
         //Write to JSON file

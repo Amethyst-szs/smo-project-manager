@@ -70,13 +70,8 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Generate Music`:
             const wavetool = require('./wavetool');
-
-            //Let the user select which sound file they want
-            AllSourceFiles = fs.readdirSync(`${WorkingDirectory}/project/AllUserContent/Sounds/`);
-            while(AllSourceFiles.length <= 1){ AllSourceFiles.push(`None`); }
-            TargetFile = await input.select(`Please select your audio file from AllUserContent/Sounds/`, AllSourceFiles);
-
-            wavetool.Main(WorkingDirectory, TargetFile);
+            wavobj = await menu.MusicGenerator(WorkingDirectory);
+            wavetool.Main(WorkingDirectory, wavobj);
             await menu.GenericConfirm();
             MainMenuLoop();
             return;
@@ -127,6 +122,8 @@ async function SetupCheck() {
         }
     }
 
+    const projectinit = require('./projectinit');
+
     //Check and load ProjectData.json
     if(fs.existsSync(WorkingDirectory+`/ProjectData.json`))
     {
@@ -145,6 +142,7 @@ async function SetupCheck() {
             Confirmation = await menu.ConfirmLoadOldProject();
             if(Confirmation)
             {
+                projectinit.UpdateProject(WorkingDirectory, ProgramVersion.Version);
                 MainMenuLoop();
             }
             return;
@@ -178,7 +176,6 @@ async function SetupCheck() {
         if(InitalizeConfirmation)
         {
             //Prepare folder
-            const projectinit = require('./projectinit');
             ProjectData = await projectinit.CreateProject(WorkingDirectory);
             MainMenuLoop();
         }

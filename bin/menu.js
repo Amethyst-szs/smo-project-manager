@@ -50,7 +50,7 @@ module.exports = {
     },
 
     ConfirmLoadOldProject: async function(){
-        UserInput = await input.select(`This project is outdated. Should it load anyway? (May cause issues!)`, [`Yes`, `No`]);
+        UserInput = await input.select(`This project is outdated. Should it be updated? (May cause issues!)`, [`Yes`, `No`]);
         switch(UserInput){
             case `Yes`:
                 return true;
@@ -163,6 +163,31 @@ module.exports = {
     TemplateObject: async function(OwnDirectory){
         AllObjects = fs.readdirSync(`${OwnDirectory}templateszs/`);
         return await input.checkboxes(`Select all templates you would like:`, AllObjects);
+    },
+
+    MusicGenerator: async function(WorkingDirectory){
+        wavobj = {};
+        //Let the user select which sound file they want
+        AllSourceFiles = fs.readdirSync(`${WorkingDirectory}/project/AllUserContent/Sounds/`);
+        while(AllSourceFiles.length <= 1){ AllSourceFiles.push(`None`); }
+        wavobj.target = await input.select(`Please select your audio file from AllUserContent/Sounds/`, AllSourceFiles);
+        
+        //Decide if you are using a loop setup
+        wavobj.type = await input.select(`Does this song have custom loop points?`, ["No", "Loops"]);
+
+        //If using custom loop points, ask the user for them
+        if(wavobj.type == `Loops`){
+            const ProjectData = fs.readJSONSync(`${WorkingDirectory}/ProjectData.json`);
+            if(ProjectData.songs.hasOwnProperty(wavobj.target)){
+                wavobj.start = await input.text(`Please input your loop start value:`, {default: ProjectData.songs[wavobj.target].start});
+                wavobj.end = await input.text(`Please input your loop end value:`, {default: ProjectData.songs[wavobj.target].end});
+            } else {
+                wavobj.start = await input.text(`Please input your loop start value:`, {default: 0});
+                wavobj.end = await input.text(`Please input your loop end value:`, {default: 100000});
+            }
+        }
+
+        return wavobj;
     },
 
     ProgressBar: function(Label, Current, Target){
