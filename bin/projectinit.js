@@ -12,6 +12,11 @@ module.exports = {
             JSONObject.songs = {};
         }
 
+        //Unchanged File Checking Update
+        if(!JSONObject.hasOwnProperty(`dates`)){
+            JSONObject.dates = {};
+        }
+
         //Set ProjectData to current version and save
         JSONObject.Version = parseInt(CurrentVersion, 10);
         fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject);
@@ -29,7 +34,8 @@ module.exports = {
                 isUndumped: true,
                 Type: `N/A`
             },
-            Songs: {}
+            songs: {},
+            dates: {}
         }
 
         //Write to JSON file

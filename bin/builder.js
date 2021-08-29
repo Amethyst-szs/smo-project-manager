@@ -4,6 +4,7 @@ const jsonfile = require('jsonfile');
 const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
 const menu = require('./menu');
+const { privateEncrypt } = require("crypto");
 
 let TotalTasks = 6;
 
@@ -11,6 +12,25 @@ function UpdateConsole(Label, Progress){
     console.clear();
     console.log(chalk.red.bold(`Building project...\nDon't close the program or alter any files!\n`));
     menu.ProgressBar(Label, Progress, TotalTasks);
+}
+
+function ProcessFolder(WorkingDirectory, FolderContents, Path, Dest){
+    //Start by verifying that there is content in this folders
+    if(FolderContents.length == 0) {return;}
+
+    //Iterate through these files
+    FolderContents.forEach(i => {
+        //Perform different actions based on if the object is a file or folder
+        if(i.includes(`.`)) {
+            //Copy file to romfs, then loop back
+            fs.copyFileSync(`${WorkingDirectory}/project/${Path}/${i}`,
+            `${WorkingDirectory}/romfs/${Dest}/${i}`);
+        } else {
+            //Enter the sub folder and copy it's files over to the romfs
+            SubFolderContents = fs.readdirSync(`${WorkingDirectory}/project/${Path}/${i}/`);
+            ProcessFolder(WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest);
+        }
+    });
 }
 
 module.exports = {
@@ -61,37 +81,8 @@ module.exports = {
             //Start by making the target folder in romfs as prep for the file copying
             fs.mkdirSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`);
 
-            //Iterate through these files
-            for(CurrentFile=0;CurrentFile<FolderContents.length;CurrentFile++){
-                //Start by verifying that there is content in these folders
-                if(FolderContents.length == 0) {continue;}
-                
-                //Check if the requested object is a folder or a file
-                isSubFolder = false;
-                if(!FolderContents[CurrentFile].includes(`.`)) {isSubFolder = true};
-
-                //Perform different actions based on if the object is a file or folder
-                if(isSubFolder == false)
-                {
-                    //Copy file to romfs, then loop back
-                    fs.copyFileSync(`${WorkingDirectory}/project/${ProjectFolders[CurrentFolder]}/${FolderContents[CurrentFile]}`,
-                    `${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}/${FolderContents[CurrentFile]}`);
-                }
-                else
-                {
-                    //Enter the sub folder and copy it's files over to the romfs
-                    SubFolderContents = fs.readdirSync(`${WorkingDirectory}/project/${ProjectFolders[CurrentFolder]}/${FolderContents[CurrentFile]}/`)
-
-                    for(CurrentSubFile=0;CurrentSubFile<SubFolderContents.length;CurrentSubFile++){
-                        //Start by verifying that there is content in these folders
-                        if(SubFolderContents.length == 0) {continue;}
-
-                        //Copy files from sub folder to romfs, then loop back
-                        fs.copyFileSync(`${WorkingDirectory}/project/${ProjectFolders[CurrentFolder]}/${FolderContents[CurrentFile]}/${SubFolderContents[CurrentSubFile]}`,
-                        `${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}/${SubFolderContents[CurrentSubFile]}`);
-                    }
-                }
-            }
+            //Run code on current folder
+            ProcessFolder(WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder]);
         }
 
         /////////////////////////////
