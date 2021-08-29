@@ -24,7 +24,7 @@ function BuildFilesLoopless(WorkingDirectory, Target){
 
 function BuildFilesLoop(WorkingDirectory, Target, Start, End){
     //Run WaveConverter for a looping bfstm with the selected file
-    execSync(`${directories.PluginWaveConverter}/WaveConverter.exe --format bfstm --loop-start=${Start} --loop-end=${End} --stream-prefetch --encoding adpcm ${WorkingDirectory}/project/AllUserContent/Sounds/${Target}`, (err, stdout, stderr) => {
+    execSync(`${directories.PluginWaveConverter}/WaveConverter.exe --format bfstm --loop-start=${Start} --loop-end=${End-2} --stream-prefetch --encoding adpcm ${WorkingDirectory}/project/AllUserContent/Sounds/${Target}`, (err, stdout, stderr) => {
         if (err) {
         console.log(chalk.red.bold(`WaveConverter Error!`));
         return;
