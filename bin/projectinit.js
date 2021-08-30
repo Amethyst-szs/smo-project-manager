@@ -1,5 +1,4 @@
 const chalk = require("chalk");
-const jsonfile = require('jsonfile');
 const version = require('../save_data/version.json')
 var fs = require('fs-extra');
 
@@ -19,7 +18,7 @@ module.exports = {
 
         //Set ProjectData to current version and save
         JSONObject.Version = parseInt(CurrentVersion, 10);
-        fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject);
+        fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject, {spaces: `\t`});
 
         return;
     },
@@ -39,7 +38,7 @@ module.exports = {
         }
 
         //Write to JSON file
-        jsonfile.writeFileSync(WorkingDirectory+`/ProjectData.json`, JSONObject);
+        fs.writeJSONSync(WorkingDirectory+`/ProjectData.json`, JSONObject, {spaces: `\t`});
 
         //Check if folder directories already exist
         isRomfsExists = fs.existsSync('romfs');

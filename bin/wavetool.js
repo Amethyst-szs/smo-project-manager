@@ -42,7 +42,7 @@ function ProjectDataUpdate(WorkingDirectory, wavobj, Start, End){
     JSONObject.songs[wavobj.target].start = Start;
     JSONObject.songs[wavobj.target].end = End;
 
-    fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject);
+    fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject, {spaces: `\t`});
 }
 
 module.exports = {

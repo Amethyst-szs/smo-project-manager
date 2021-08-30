@@ -1,6 +1,5 @@
 const chalk = require("chalk");
 const fs = require('fs-extra');
-const jsonfile = require('jsonfile');
 const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
 const menu = require('./menu');
@@ -231,7 +230,7 @@ module.exports = {
         ProjectData.DumpStats.Amount++;
 
         //Write changes to file
-        jsonfile.writeFileSync(WorkingDirectory+`/ProjectData.json`, ProjectData);
+        fs.writeJSONSync(WorkingDirectory+`/ProjectData.json`, ProjectData, {spaces: `\t`});
 
         //Log duration
         console.timeEnd(`Duration`);
