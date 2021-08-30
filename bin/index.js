@@ -149,6 +149,7 @@ async function SetupCheck() {
             if(Confirmation)
             {
                 projectinit.UpdateProject(WorkingDirectory, ProgramVersion.Version);
+                ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
                 MainMenuLoop();
             }
             return;

@@ -5,7 +5,7 @@ const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
 const menu = require('./menu');
 
-let TotalTasks = 6;
+let TotalTasks = 5;
 let ChangedFiles = [];
 
 function UpdateConsole(Label, Progress){
@@ -55,8 +55,8 @@ module.exports = {
         UpdateConsole(`Preparing build...`, 0); //Task 0
 
         //Prepare arrays (DOES NOT INCLUDES TEXT OR CUBEMAP FOLDERS, THOSE ARE HANDLED SEPERATELY)
-        const SMOFolders = [`EffectData`, `EventData`, `LayoutData`, `MovieData`, `ObjectData`, `ShaderData`, `SoundData`, `StageData`, `SystemData`];
-        const ProjectFolders = [`Effects`, `Events`, `UI`, `Video`, `Objects`, `Shaders`, `Sound`, `Stages`, `System`];
+        const SMOFolders = [`EffectData`, `EventData`, `LayoutData`, `MovieData`, `ObjectData`, `ShaderData`, `SoundData`, `StageData`, `SystemData`, `ObjectData`];
+        const ProjectFolders = [`Effects`, `Events`, `UI`, `Video`, `Objects`, `Shaders`, `Sound`, `Stages`, `System`, `CubeMaps`];
         //Reset ChangedFiles for build
         ChangedFiles = [];
 
@@ -106,7 +106,9 @@ module.exports = {
             }
 
             //Start by making the target folder in romfs as prep for the file copying
-            fs.mkdirSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`);
+            if(!fs.existsSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`)){
+                fs.mkdirSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`);
+            }
 
             //Check to make sure this folder exists in the ProjectData Json
             if(!ProjectData.dates.hasOwnProperty(SMOFolders[CurrentFolder])){
@@ -116,31 +118,12 @@ module.exports = {
             //Run code on current folder
             ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder]);
         }
-        
-        /////////////////////////////
-        //Copy CubeMaps to ObjectData
-        /////////////////////////////
-
-        UpdateConsole(`Moving CubeMaps into project...`, 3);
-
-        //Read the CubeMap directory, then copy each file to the ObjectData folder
-        CubeMapContents = fs.readdirSync(`${WorkingDirectory}/project/CubeMaps/`);
-
-        //Verify ObjectData directory
-        if(fs.existsSync(`${WorkingDirectory}/romfs/ObjectData` == false && CubeMapContents.length > 0)){
-            fs.mkdirSync(`${WorkingDirectory}/romfs/ObjectData`);
-        }
-
-        for(CurrentFile=0;CurrentFile<CubeMapContents.length;CurrentFile++){
-            fs.copyFileSync(`${WorkingDirectory}/project/CubeMaps/${CubeMapContents[CurrentFile]}`,
-            `${WorkingDirectory}/romfs/ObjectData/${CubeMapContents[CurrentFile]}`);
-        }
 
         /////////////////
         //Build Text Data
         /////////////////
 
-        if(FullBuild >= 1) { UpdateConsole(`Building text data... (Full Build Only)`, 4); }
+        if(FullBuild >= 1) { UpdateConsole(`Building text data... (Full Build Only)`, 3); }
 
         //Load all language folders from the project folder
         TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
@@ -189,7 +172,7 @@ module.exports = {
         //////////////////////////
 
         //Alert console
-        UpdateConsole(`Cleaning up SoundData...`, 5);
+        UpdateConsole(`Cleaning up SoundData...`, 4);
 
         //Read all files in SoundData folder, but first make sure the SoundData folder exists
         isSoundDataFolderExist = fs.existsSync(`${WorkingDirectory}/romfs/SoundData/`);
@@ -221,7 +204,7 @@ module.exports = {
         /////////////////////////
         
         //Alert console
-        UpdateConsole(`Updating project information...`, 6);
+        UpdateConsole(`Updating project information...`, 5);
 
         //Update time
         Time = new Date();
