@@ -1,5 +1,5 @@
 //Requirements
-const fs = require('fs');
+const fs = require('fs-extra');
 const chalk = require('chalk');
 const boxen = require('boxen');
 const input = require('input');
@@ -30,20 +30,30 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     //Launch main menu
     MenuSelection = await menu.MainMenu(isFTP);
     switch (MenuSelection){
-        case `Build Project (Full)`:
-            ProjectData = await builder.Build(ProjectData, WorkingDirectory, true, OwnDirectory);
+        case `Build Project (Complete)`:
+            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 2, OwnDirectory);
+            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
             if(isFTP) {
-                SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
-                await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
+                await ftpconnector.FTPClearRomfs(FTPAccessObject);
+                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
+            }
+            await menu.GenericConfirm();
+            MainMenuLoop();
+            return;
+        case `Build Project (Full)`:
+            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 1, OwnDirectory);
+            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
+            if(isFTP) {
+                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
             }
             await menu.GenericConfirm();
             MainMenuLoop();
             return;
         case `Build Project (Quick)`:
-            ProjectData = await builder.Build(ProjectData, WorkingDirectory, false, OwnDirectory);
+            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 0, OwnDirectory);
+            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
             if(isFTP) {
-                SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
-                await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
+                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
             }
             await menu.GenericConfirm();
             MainMenuLoop();
@@ -73,10 +83,6 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             wavobj = await menu.MusicGenerator(WorkingDirectory);
             wavetool.Main(WorkingDirectory, wavobj);
             await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Information / About`:
-            await menu.Information();
             MainMenuLoop();
             return;
         case `Connect To Switch - FTP`:

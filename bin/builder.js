@@ -4,9 +4,9 @@ const jsonfile = require('jsonfile');
 const { execSync } = require('child_process');
 const { mkdirSync } = require("fs");
 const menu = require('./menu');
-const { privateEncrypt } = require("crypto");
 
 let TotalTasks = 6;
+let ChangedFiles = [];
 
 function UpdateConsole(Label, Progress){
     console.clear();
@@ -14,21 +14,36 @@ function UpdateConsole(Label, Progress){
     menu.ProgressBar(Label, Progress, TotalTasks);
 }
 
-function ProcessFolder(WorkingDirectory, FolderContents, Path, Dest){
+function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest, OrigSMOFolder){
     //Start by verifying that there is content in this folders
     if(FolderContents.length == 0) {return;}
 
     //Iterate through these files
     FolderContents.forEach(i => {
+        //Before handling the file/folder, read it's date last modified
+        CurrentStats = fs.statSync(`${WorkingDirectory}/project/${Path}/${i}`);
+
         //Perform different actions based on if the object is a file or folder
-        if(i.includes(`.`)) {
+        if(CurrentStats.isFile()) {
+
+            //Compare to last date modified stored in ProjectData.json
+            if(ProjectData.dates[OrigSMOFolder].hasOwnProperty(i)){
+                if(ProjectData.dates[OrigSMOFolder][i] != CurrentStats.mtimeMs){
+                    ProjectData.dates[OrigSMOFolder][i] = CurrentStats.mtimeMs
+                    ChangedFiles.push(i);
+                }
+            } else {
+                ProjectData.dates[OrigSMOFolder][i] = CurrentStats.mtimeMs
+                ChangedFiles.push(i);
+            }
+
             //Copy file to romfs, then loop back
             fs.copyFileSync(`${WorkingDirectory}/project/${Path}/${i}`,
             `${WorkingDirectory}/romfs/${Dest}/${i}`);
         } else {
             //Enter the sub folder and copy it's files over to the romfs
             SubFolderContents = fs.readdirSync(`${WorkingDirectory}/project/${Path}/${i}/`);
-            ProcessFolder(WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest);
+            ProcessFolder(ProjectData, WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest, OrigSMOFolder);
         }
     });
 }
@@ -40,8 +55,10 @@ module.exports = {
         UpdateConsole(`Preparing build...`, 0); //Task 0
 
         //Prepare arrays (DOES NOT INCLUDES TEXT OR CUBEMAP FOLDERS, THOSE ARE HANDLED SEPERATELY)
-        SMOFolders = [`EffectData`, `EventData`, `LayoutData`, `MovieData`, `ObjectData`, `ShaderData`, `SoundData`, `StageData`, `SystemData`];
-        ProjectFolders = [`Effects`, `Events`, `UI`, `Video`, `Objects`, `Shaders`, `Sound`, `Stages`, `System`];
+        const SMOFolders = [`EffectData`, `EventData`, `LayoutData`, `MovieData`, `ObjectData`, `ShaderData`, `SoundData`, `StageData`, `SystemData`];
+        const ProjectFolders = [`Effects`, `Events`, `UI`, `Video`, `Objects`, `Shaders`, `Sound`, `Stages`, `System`];
+        //Reset ChangedFiles for build
+        ChangedFiles = [];
 
         ///////////////////////
         //Delete previous build
@@ -53,7 +70,7 @@ module.exports = {
         }
 
         //Reset LocalizedData if a full build
-        if(FullBuild) {
+        if(FullBuild >= 1) {
             fs.removeSync(`${WorkingDirectory}/romfs/LocalizedData/`);
 
             //Load all language folders from the project folder
@@ -63,6 +80,10 @@ module.exports = {
             if(TextContents.length > 0){
                 fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData`);
             }
+        }
+
+        if(FullBuild >= 2) {
+            ProjectData.dates = {};
         }
 
         //////////////////////////
@@ -76,15 +97,26 @@ module.exports = {
             FolderContents = fs.readdirSync(`${WorkingDirectory}/project/${ProjectFolders[CurrentFolder]}/`);
 
             //If this folder is empty, skip it and move on to the next
-            if(FolderContents.length == 0) { continue; }
+            if(FolderContents.length == 0) {
+                //Before skipping the folder, remove this attribute from the ProjectData.json if it exists
+                if(ProjectData.dates.hasOwnProperty(SMOFolders[CurrentFolder])){
+                    delete ProjectData.dates[SMOFolders[CurrentFolder]];
+                }
+                continue; 
+            }
 
             //Start by making the target folder in romfs as prep for the file copying
             fs.mkdirSync(`${WorkingDirectory}/romfs/${SMOFolders[CurrentFolder]}`);
 
-            //Run code on current folder
-            ProcessFolder(WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder]);
-        }
+            //Check to make sure this folder exists in the ProjectData Json
+            if(!ProjectData.dates.hasOwnProperty(SMOFolders[CurrentFolder])){
+                ProjectData.dates[SMOFolders[CurrentFolder]] = {};
+            }
 
+            //Run code on current folder
+            ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder]);
+        }
+        
         /////////////////////////////
         //Copy CubeMaps to ObjectData
         /////////////////////////////
@@ -108,14 +140,14 @@ module.exports = {
         //Build Text Data
         /////////////////
 
-        if(FullBuild) { UpdateConsole(`Building text data... (Full Build Only)`, 4); }
+        if(FullBuild >= 1) { UpdateConsole(`Building text data... (Full Build Only)`, 4); }
 
         //Load all language folders from the project folder
         TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
 
         for(CurrentLang=0;CurrentLang<TextContents.length;CurrentLang++){
             //If not a full build, skip text building
-            if(!FullBuild) {continue;}
+            if(FullBuild == 0) {continue;}
 
             //If folder is "Common" handle differently
             if(TextContents[CurrentLang] == `Common`){
@@ -197,10 +229,16 @@ module.exports = {
         Time.getHours()+":"+Time.getMinutes()+":" +Time.getSeconds();
 
         //Update Type
-        if(FullBuild){
-            ProjectData.DumpStats.Type = `Full`;
-        } else {
-            ProjectData.DumpStats.Type = `Quick`;
+        switch(FullBuild){
+            case 0:
+                ProjectData.DumpStats.Type = `Quick`;
+                break;
+            case 1:
+                ProjectData.DumpStats.Type = `Full`;
+                break;
+            case 2:
+                ProjectData.DumpStats.Type = `Complete`;
+                break;
         }
 
         //Update has been dumped
@@ -216,6 +254,6 @@ module.exports = {
         console.timeEnd(`Duration`);
 
         //Return
-        return ProjectData;
+        return ChangedFiles;
     }
 }

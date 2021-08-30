@@ -38,8 +38,8 @@ module.exports = {
         return isFTPValid;
     },
 
-    FTPTransferProject: async function(WorkingDirectory, SelectedFolders, FTPAccessObject){
-        if(SelectedFolders == []) { return; }
+    FTPTransferProject: async function(WorkingDirectory, ChangedFiles, FTPAccessObject){
+        if(ChangedFiles == []) { return; }
 
         console.time(`Duration`);
 
@@ -54,26 +54,44 @@ module.exports = {
             if(await client.pwd() == SMOPath){
                 console.log(chalk.greenBright.bold.underline(`Entered ${SMOPath} on server`));
                 //Get a list of all files in SMOPath
-                ExistingFolders = await client.list(`${SMOPath}`);
-                TotalTasks = SelectedFolders.length+1;
+                ExistingServerFolders = await client.list(`${SMOPath}`);
+                ExistingLocalFolders = fs.readdirSync(`${WorkingDirectory}/romfs/`);
+                TotalTasks = ChangedFiles.length+1;
 
                 client.trackProgress(info => {
-                    UpdateConsole(`Sending ${SelectedFolders[i]} to server...\n${info.name} - ${info.bytes}`, i+1, TotalTasks);
+                    UpdateConsole(`Sending ${info.name.slice(38, info.name.length)} to server - ${info.bytes/1000}KBs`,
+                    TotalTasks-ChangedFiles.length, TotalTasks);
                 })
 
-                for(i=0;i<SelectedFolders.length;i++){
-                    //Before uploading contents of this selected folder to server, check if the current one needs to be deleted
-                    for(i2=0;i2<ExistingFolders.length;i2++){
-                        if(SelectedFolders[i] == ExistingFolders[i2].name){
-                            await client.removeDir(`${SMOPath}/${SelectedFolders[i]}`);
+                //Start by verifying all folders needed are on server
+                for(CurrentLocalFolder of ExistingLocalFolders){
+                    if(!ExistingServerFolders.includes(CurrentLocalFolder)){
+                        await client.ensureDir(`${SMOPath}/${CurrentLocalFolder}`);
+                        await client.cdup();
+                    }
+                }
+
+                // Now do that the other way. If folders are on server that aren't on local, remove from server
+                for (CurrentServerFolder of ExistingServerFolders) {
+                    if(!ExistingLocalFolders.includes(CurrentServerFolder.name)){
+                        await client.removeDir(`${SMOPath}/${CurrentServerFolder.name}`);
+                    }
+                }
+
+                // //Now start going through the server folders and copying new files over
+                ExistingServerFolders = await client.list(`${SMOPath}`);
+                for (CurrentServerFolder of ExistingServerFolders) {
+                    await client.cd(`${SMOPath}/${CurrentServerFolder.name}`);
+                    CurrentContents = fs.readdirSync(`${WorkingDirectory}/romfs/${CurrentServerFolder.name}/`);
+                    for (CurrentFile of CurrentContents) {
+                        if(ChangedFiles.includes(CurrentFile)){
+                            await client.uploadFrom(`${WorkingDirectory}/romfs/${CurrentServerFolder.name}/${CurrentFile}`,
+                            `${SMOPath}/${CurrentServerFolder.name}/${CurrentFile}`);
+                            ChangedFiles.splice(ChangedFiles.indexOf(CurrentFile), 1);
                         }
                     }
-                    //Now the current selected folder can be uploaded
-                    UpdateConsole(`Sending ${SelectedFolders[i]} to server...`, i+1, TotalTasks);
-                    await client.ensureDir(`${SMOPath}/${SelectedFolders[i]}`);
-                    await client.uploadFromDir(`${WorkingDirectory}/romfs/${SelectedFolders[i]}`);
-                    await client.cdup();
                 }
+
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }
         }
