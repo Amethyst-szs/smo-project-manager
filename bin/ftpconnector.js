@@ -56,7 +56,7 @@ module.exports = {
                 //Get a list of all files in SMOPath
                 ExistingServerFolders = await client.list(`${SMOPath}`);
                 ExistingLocalFolders = fs.readdirSync(`${WorkingDirectory}/romfs/`);
-                TotalTasks = ChangedFiles.length+1;
+                TotalTasks = ChangedFiles.length+2;
 
                 client.trackProgress(info => {
                     UpdateConsole(`Sending ${info.name.slice(38, info.name.length)} to server - ${info.bytes/1000}KBs`,
@@ -78,7 +78,7 @@ module.exports = {
                     }
                 }
 
-                // //Now start going through the server folders and copying new files over
+                // Now start going through the server folders and copying new files over
                 ExistingServerFolders = await client.list(`${SMOPath}`);
                 for (CurrentServerFolder of ExistingServerFolders) {
                     await client.cd(`${SMOPath}/${CurrentServerFolder.name}`);
@@ -92,6 +92,12 @@ module.exports = {
                     }
                 }
 
+                //Stop automatically tracking the transfer progress
+                client.trackProgress()
+                UpdateConsole(`Finalizing LocalizedData...`, TotalTasks-1, TotalTasks);
+                //Lastly, move LocalizedData over slowly because that folder is WACKY
+                await client.uploadFromDir(`${WorkingDirectory}/romfs/LocalizedData/`, `${SMOPath}/LocalizedData/`);
+
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }
         }
@@ -99,7 +105,7 @@ module.exports = {
             console.log(chalk.redBright.bold.underline(`Error!`))
             console.log(err)
         }
-        client.trackProgress()
+
         console.timeEnd(`Duration`);
         client.close()
     },
