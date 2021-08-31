@@ -126,6 +126,7 @@ module.exports = {
 
         //Load all language folders from the project folder
         TextContents = fs.readdirSync(`${WorkingDirectory}/project/Text/`);
+        MessageDataPath = [`SystemMessage`, `StageMessage`, `LayoutMessage`];
 
         for(CurrentLang=0;CurrentLang<TextContents.length;CurrentLang++){
             //If not a full build, skip text building
@@ -145,6 +146,7 @@ module.exports = {
 
             //Create directories in romfs section
             fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData/${TextContents[CurrentLang]}/MessageData/`, {recursive: true});
+            fs.mkdirSync(`${WorkingDirectory}/romfs/LocalizedData/${TextContents[CurrentLang]}/LayoutData/`, {recursive: true});
 
             //Locate all text folders
             LangContainers = fs.readdirSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}`);
@@ -152,14 +154,20 @@ module.exports = {
                 //Run SarcTool on current text container
                 execSync(`${OwnDirectory}sarctool/sarc_tool.exe -little -compress 9 ${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}`, (err, stdout, stderr) => {
                     if (err) {
-                      console.log(chalk.red.bold(`SarcTool Error!`));
-                      return;
+                    console.log(chalk.red.bold(`SarcTool Error!`));
+                    return;
                     }
                 });
 
-                //Copy this compressed file over to the romfs
-                fs.copyFileSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}.szs`,
-                `${WorkingDirectory}/romfs/LocalizedData/${TextContents[CurrentLang]}/MessageData/${LangContainers[CurrentContainer]}.szs`);
+                if(MessageDataPath.includes(LangContainers[CurrentContainer])){
+                    //Copy this compressed file over to the romfs MessageData
+                    fs.copyFileSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}.szs`,
+                    `${WorkingDirectory}/romfs/LocalizedData/${TextContents[CurrentLang]}/MessageData/${LangContainers[CurrentContainer]}.szs`);
+                } else {
+                    //Copy this compressed file over to the romfs MessageData
+                    fs.copyFileSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}.szs`,
+                    `${WorkingDirectory}/romfs/LocalizedData/${TextContents[CurrentLang]}/LayoutData/${LangContainers[CurrentContainer]}.szs`);
+                }
                 
                 //Delete compressed version from the project folder
                 fs.removeSync(`${WorkingDirectory}/project/Text/${TextContents[CurrentLang]}/${LangContainers[CurrentContainer]}.szs`);

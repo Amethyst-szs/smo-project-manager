@@ -49,16 +49,23 @@ module.exports = {
 
         //Create list of all language container files
         let SMOSourceLang
+        let SMOSourceFont
 
         if(isUseOverride){
             SMOSourceLang = fs.readdirSync(`${directories.Optional.LocalizedDataOverride}/${LangSelection}/MessageData/`);
+            SMOSourceFont = fs.readdirSync(`${directories.Optional.LocalizedDataOverride}/${LangSelection}/LayoutData/`);
         } else {
             SMOSourceLang = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/MessageData/`);
+            SMOSourceFont = fs.readdirSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/LayoutData/`);
         }
 
         //Remove everything that isn't a .szs
         for(i=0;i<SMOSourceLang.length;i++){
             if (!SMOSourceLang[i].includes(`.szs`)) { SMOSourceLang.splice(i, 1); }
+        }
+
+        for(i=0;i<SMOSourceFont.length;i++){
+            if (!SMOSourceFont[i].includes(`.szs`)) { SMOSourceFont.splice(i, 1); }
         }
 
         //Copy files
@@ -72,6 +79,19 @@ module.exports = {
                 `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
             }
             console.log(chalk.green.bold(`Added ${SMOSourceLang[i]} from ${LangSelection} to project`));
+        }
+
+        if(SMOSourceFont.length != 0){
+            for(i=0;i<SMOSourceFont.length;i++){
+                if(isUseOverride){
+                    fs.copyFileSync(`${directories.Optional.LocalizedDataOverride}/${LangSelection}/LayoutData/${SMOSourceFont[i]}`,
+                    `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceFont[i]}`);
+                } else {
+                    fs.copyFileSync(`${directories.SMODirectory}/LocalizedData/${LangSelection}/LayoutData/${SMOSourceFont[i]}`,
+                    `${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceFont[i]}`);
+                }
+                console.log(chalk.green.bold(`Added ${SMOSourceFont[i]} from ${LangSelection} to project`));
+            }
         }
 
         ////////////////////
@@ -91,6 +111,21 @@ module.exports = {
             //Delete old compressed files
             fs.removeSync(`${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceLang[i]}`);
             console.log(chalk.green.bold(`Successfully deleted compressed ${SMOSourceLang[i]} from ${LangSelection}`));
+        }
+
+        for(i=0;i<SMOSourceFont.length;i++){
+            //Run SarcTool on current text file
+            execSync(`${OwnDirectory}sarctool/sarc_tool.exe ${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceFont[i]}`, (err, stdout, stderr) => {
+                if (err) {
+                  console.log(chalk.red.bold(`SarcTool Error!`));
+                  return;
+                }
+            });
+            console.log(chalk.green.bold(`Successfully decompressed ${SMOSourceFont[i]} from ${LangSelection}`));
+
+            //Delete old compressed files
+            fs.removeSync(`${WorkingDirectory}/project/Text/${LangSelection}/${SMOSourceFont[i]}`);
+            console.log(chalk.green.bold(`Successfully deleted compressed ${SMOSourceFont[i]} from ${LangSelection}`));
         }
 
         console.log(chalk.cyanBright.bold(`\nCompleted adding language files!\nCheck Text folder for files`));
