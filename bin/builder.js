@@ -132,6 +132,9 @@ module.exports = {
             //If not a full build, skip text building
             if(FullBuild == 0) {continue;}
 
+            //If reached this point, you can add "LocalizedDataHandler" to the changed files list
+            ChangedFiles.push(`LocalizedDataHandler`);
+
             //If folder is "Common" handle differently
             if(TextContents[CurrentLang] == `Common`){
                 //Make common directory in romfs

@@ -95,8 +95,11 @@ module.exports = {
                 //Stop automatically tracking the transfer progress
                 client.trackProgress()
                 UpdateConsole(`Finalizing LocalizedData...`, TotalTasks-1, TotalTasks);
-                //Lastly, move LocalizedData over slowly because that folder is WACKY
-                await client.uploadFromDir(`${WorkingDirectory}/romfs/LocalizedData/`, `${SMOPath}/LocalizedData/`);
+
+                //Lastly, move LocalizedData over IF "LocalizedDataHandler" remains in ChangedFiles
+                if(ChangedFiles.includes(`LocalizedDataHandler`)){
+                    await client.uploadFromDir(`${WorkingDirectory}/romfs/LocalizedData/`, `${SMOPath}/LocalizedData/`);
+                }
 
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }
