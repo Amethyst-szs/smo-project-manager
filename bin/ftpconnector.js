@@ -56,7 +56,7 @@ module.exports = {
                 //Get a list of all files in SMOPath
                 ExistingServerFolders = await client.list(`${SMOPath}`);
                 ExistingLocalFolders = fs.readdirSync(`${WorkingDirectory}/romfs/`);
-                TotalTasks = ChangedFiles.length+2;
+                TotalTasks = ChangedFiles.length+3;
 
                 client.trackProgress(info => {
                     UpdateConsole(`Sending ${info.name.slice(38, info.name.length)} to server - ${info.bytes/1000}KBs`,
@@ -94,11 +94,23 @@ module.exports = {
 
                 //Stop automatically tracking the transfer progress
                 client.trackProgress()
-                UpdateConsole(`Finalizing LocalizedData...`, TotalTasks-1, TotalTasks);
+                UpdateConsole(`Finalizing LocalizedData...`, TotalTasks-2, TotalTasks);
 
-                //Lastly, move LocalizedData over IF "LocalizedDataHandler" remains in ChangedFiles
+                //Move LocalizedData over IF "LocalizedDataHandler" remains in ChangedFiles
                 if(ChangedFiles.includes(`LocalizedDataHandler`)){
                     await client.uploadFromDir(`${WorkingDirectory}/romfs/LocalizedData/`, `${SMOPath}/LocalizedData/`);
+                }
+
+                //Update user about music transfer if music is being transfered
+                UpdateConsole(`Finalizing SoundData... (WILL TAKE AWHILE!)`, TotalTasks-1, TotalTasks);
+                
+                //Move SoundData streams if any song files have changed
+                for(i=0;i<ChangedFiles.length;i++){
+                    if(ChangedFiles[i].includes(`.bfstm`)){
+                        await client.ensureDir(`${SMOPath}/SoundData/stream/`);
+                        await client.uploadFromDir(`${WorkingDirectory}/romfs/SoundData/stream/`, `${SMOPath}/SoundData/stream/`);
+                        ChangedFiles = []; //CHANGE THIS IF MORE CHECKS ARE ADDED AFTER THIS POINT!!!!!!
+                    }
                 }
 
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
