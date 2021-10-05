@@ -9,6 +9,7 @@ const { writeJsonSync } = require('fs-extra');
 const menu = require('./menu');
 const builder = require('./builder');
 const ftpconnector = require('./ftpconnector');
+const fileexplorer = require('./fileexplorer');
 
 //Variable Setup
 let OwnDirectory = __dirname.slice(0,__dirname.length-3);
@@ -114,24 +115,28 @@ async function SetupCheck() {
     
     //Check Directories.json
     const directorysetup = require('./directorysetup');
+    FunctionalDirectories = true;
 
     if(!fs.existsSync(`${OwnDirectory}/save_data/directories.json`)){
-        console.log(chalk.red.bold(`No directories.json found!\nPlease open the .json and supply folder paths`));
+        console.log(chalk.red.bold(`No directories.json found! (First boot?)\nPlease set this up in the menu`));
         directorysetup.CreateFile(OwnDirectory);
         menu.GenericConfirm();
-        return;
+        FunctionalDirectories = false;
     } else {
         isFoundIssue = await directorysetup.IssuesCheck(OwnDirectory);
         if(isFoundIssue){
             menu.GenericConfirm();
-            return true;
+            FunctionalDirectories = false;
         }
     }
 
     const projectinit = require('./projectinit');
 
+    //Process the WorkingDirectory before trying to load ProjectData.json
+    console.log(WorkingDirectory);
+
     //Check and load ProjectData.json
-    if(fs.existsSync(WorkingDirectory+`/ProjectData.json`))
+    if(fs.existsSync(WorkingDirectory+`/ProjectData.json`) && FunctionalDirectories)
     {
         //Load in required files
         ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
@@ -155,43 +160,45 @@ async function SetupCheck() {
             return;
         }
     } 
-    else
+    else //Open boot menu if no ProjectData.json is found
     {
-        //If the folder already contains a romfs, ask if you want to send it to the switch
-        WorkingDirectoryContents = fs.readdirSync(`${WorkingDirectory}`);
-        for(i=0;i<WorkingDirectoryContents.length;i++){
-            if(WorkingDirectoryContents[i] == `romfs`){
-                if(await menu.SendUninitProjectToSwitch()){
-                    FTPAccessObject = await menu.FTPSelection(OwnDirectory);
-                    isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
-                    if(isFTP){
-                        await ftpconnector.FTPClearRomfs(FTPAccessObject);
-                        SelectedFolders = await menu.FTPFolderSelection(WorkingDirectory);
-                        await ftpconnector.FTPTransferProject(WorkingDirectory, SelectedFolders, FTPAccessObject);
-                        await menu.GenericConfirm();
-                        return;
-                    }
-                } else {
-                    console.clear();
-                    console.log(chalk.cyan.underline(`Checking directory...`));
-                }
+        console.clear();
+        //Require 2 modules for the optional boot menu
+        bootmenu = require('./bootmenu');
+
+        console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`),
+        {margin: 1, borderStyle: 'double'}));
+        BootAction = await bootmenu.MainSelection(FunctionalDirectories);
+        BootActionComplete = false;
+
+        while(!BootActionComplete){
+            switch(BootAction){
+                case `Quit`:
+                    process.exit();
+                    break;
+                case `Create New Project`:
+                    //Select the project folder
+                    ProjectDrive = await fileexplorer.DriveSelect();
+                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+
+                    //Create the project in the selected folder
+                    WorkingDirectory = ProjectFolder;
+                    ProjectData = await projectinit.CreateProject(WorkingDirectory);
+                    BootActionComplete = true;
+                    MainMenuLoop();
+                    break;
+                case `Load Project`:
+                    //Select the project folder
+                    ProjectDrive = await fileexplorer.DriveSelect();
+                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+
+                    WorkingDirectory = ProjectFolder;
+                    ProjectData = fs.readJSONSync(`${WorkingDirectory}/ProjectData.json`);
+                    BootActionComplete = true;
+                    MainMenuLoop();
+                    break;
             }
         }
-
-        //Open selection about what to do with uninitalized project folder
-        InitalizeConfirmation = await menu.InitalizeProject();
-        if(InitalizeConfirmation)
-        {
-            //Prepare folder
-            ProjectData = await projectinit.CreateProject(WorkingDirectory);
-            MainMenuLoop();
-        }
-        else
-        {
-            //Quit Program
-            process.exit();
-        }
-
     }
 }
 

@@ -10,7 +10,8 @@ module.exports = {
             "Optional": {
                 "ObjectDataOverride": "",
                 "LocalizedDataOverride": ""
-            }
+            },
+            "PluginWaveConverter": ""
         }
         jsonfile.writeFileSync(OwnDirectory+'save_data/directories.json', directoriesDefault);
         return;
