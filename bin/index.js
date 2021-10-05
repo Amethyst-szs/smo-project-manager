@@ -162,16 +162,17 @@ async function SetupCheck() {
     } 
     else //Open boot menu if no ProjectData.json is found
     {
-        console.clear();
         //Require 2 modules for the optional boot menu
         bootmenu = require('./bootmenu');
-
-        console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`),
-        {margin: 1, borderStyle: 'double'}));
-        BootAction = await bootmenu.MainSelection(FunctionalDirectories);
         BootActionComplete = false;
 
         while(!BootActionComplete){
+            console.clear();
+            console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`),
+            {margin: 1, borderStyle: 'double'}));
+
+            BootAction = await bootmenu.MainSelection(FunctionalDirectories);
+            
             switch(BootAction){
                 case `Quit`:
                     process.exit();
@@ -180,6 +181,7 @@ async function SetupCheck() {
                     //Select the project folder
                     ProjectDrive = await fileexplorer.DriveSelect();
                     ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+                    if(ProjectFolder == `NA`) { break; }
 
                     //Create the project in the selected folder
                     WorkingDirectory = ProjectFolder;
@@ -191,6 +193,7 @@ async function SetupCheck() {
                     //Select the project folder
                     ProjectDrive = await fileexplorer.DriveSelect();
                     ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+                    if(ProjectFolder == `NA`) { break; }
 
                     WorkingDirectory = ProjectFolder;
                     ProjectData = fs.readJSONSync(`${WorkingDirectory}/ProjectData.json`);

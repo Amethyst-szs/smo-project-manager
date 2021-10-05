@@ -26,6 +26,9 @@ module.exports = {
 
             switch(Select){
                 case `<-- Back`:
+                    if(!Path.includes(`/`)){
+                        return `NA`;
+                    }
                     Path = Path.slice(0, Path.lastIndexOf(`/`));
                     break;
                 case `--> Select This Folder`:
