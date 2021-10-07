@@ -13,18 +13,12 @@ module.exports = {
             },
             "PluginWaveConverter": ""
         }
-        jsonfile.writeFileSync(OwnDirectory+'save_data/directories.json', directoriesDefault);
+        jsonfile.writeFileSync(OwnDirectory+'save_data/directories.json', directoriesDefault, {spaces: `\t`});
         return;
     },
     
     IssuesCheck: function(OwnDirectory){
         Directories = require('../save_data/directories.json');
-
-        //Check if EditorCore directory is invalid
-        if(!fs.existsSync(Directories.EditorCore+`/EditorCore.exe`)){
-            console.log(chalk.red.bold(`EditorCore directory invalid!\nMake sure this folder contains EditorCore.exe and make sure the directories.json path doesn't end in a slash`));
-            return true;
-        }
 
         //Check if SMODirectory is invalid
         if(!fs.existsSync(Directories.SMODirectory+`/EffectData/EffectDataBase.szs`)){
@@ -39,7 +33,7 @@ module.exports = {
                 "ObjectDataOverride": "",
                 "LocalizedDataOverride": ""
             }
-            fs.writeJsonSync(OwnDirectory+'save_data/directories.json', Directories);
+            fs.writeJSONSync(OwnDirectory+'save_data/directories.json', Directories, {spaces: `\t`});
             return true;
         }
         
@@ -47,10 +41,26 @@ module.exports = {
         if(!Directories.hasOwnProperty('PluginWaveConverter')){
             console.log(chalk.red.bold(`Your directories file is outdated. Check if anything needs to be added.`));
             Directories.PluginWaveConverter = "";
-            fs.writeJsonSync(OwnDirectory+'save_data/directories.json', Directories);
+            fs.writeJSONSync(OwnDirectory+'save_data/directories.json', Directories, {spaces: `\t`});
             return true;
         }
 
+        return false;
+    },
+
+    WavPluginCheck: function(){
+        Directories = require('../save_data/directories.json');
+        if(fs.existsSync(`${Directories.PluginWaveConverter}/WaveConverter.exe`)){
+            return true;
+        }
+        return false;
+    },
+
+    EditorCoreCheck: function(){
+        Directories = require('../save_data/directories.json');
+        if(fs.existsSync(`${Directories.EditorCore}/EditorCore.exe`)){
+            return true;
+        }
         return false;
     }
 }

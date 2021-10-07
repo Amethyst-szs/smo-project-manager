@@ -17,11 +17,13 @@ let WorkingDirectory = process.cwd();
 let ProjectData;
 let FTPAccessObject;
 let isFTP = false;
+let isWavPlugin = false;
+let isEditorCore = false;
 
 async function MainMenuLoop() {
     //Prepare console
     console.clear();
-    console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`), {margin: 1, borderStyle: 'double'}));
+    console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager\n${ProjectData.PName}`), {margin: 1, borderStyle: 'double'}));
     if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected as ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
     console.log(chalk.green.bold(`
 Previous Build Type: ${ProjectData.DumpStats.Type}
@@ -29,7 +31,7 @@ Previous Build Time: ${ProjectData.DumpStats.Time}
 Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
 
     //Launch main menu
-    MenuSelection = await menu.MainMenu(isFTP);
+    MenuSelection = await menu.MainMenu(isFTP, isWavPlugin, isEditorCore);
     switch (MenuSelection){
         case `Build Project (Complete)`:
             ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 2, OwnDirectory);
@@ -88,7 +90,9 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             return;
         case `Connect To Switch - FTP`:
             FTPAccessObject = await menu.FTPSelection(OwnDirectory);
-            isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);
+            if(FTPAccessObject) { 
+                isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);     
+            }
             MainMenuLoop();
             return;
         case `Empty server RomFS`:
@@ -101,6 +105,10 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
             FTPAccessObject = {};
             MainMenuLoop();
             return;
+        case `Close Project`:
+            WorkingDirectory = null
+            SetupCheck();
+            return;
         default:
             console.log(`Invalid Selection`);
             await menu.GenericConfirm();
@@ -110,6 +118,12 @@ Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
 }
 
 async function SetupCheck() {
+    //Setup unique_key
+    if(!fs.existsSync(`${OwnDirectory}save_data/unique_key.json`)){
+        KeyGenerator = require('./identity');
+        KeyGenerator.GenerateKey(OwnDirectory);
+    }
+
     //Working Directory Check
     console.log(chalk.cyan.underline(`Checking directory...`));
     
@@ -128,6 +142,12 @@ async function SetupCheck() {
             menu.GenericConfirm();
             FunctionalDirectories = false;
         }
+    }    
+
+    //If the directories are all good to go, check the optional ones for usage
+    if(FunctionalDirectories == true){
+        isWavPlugin = directorysetup.WavPluginCheck();
+        isEditorCore = directorysetup.EditorCoreCheck();
     }
 
     const projectinit = require('./projectinit');
@@ -163,13 +183,15 @@ async function SetupCheck() {
     else //Open boot menu if no ProjectData.json is found
     {
         //Require 2 modules for the optional boot menu
-        bootmenu = require('./bootmenu');
+        const bootmenu = require('./bootmenu');
         BootActionComplete = false;
 
         while(!BootActionComplete){
+            //Loop the boot menu until the boot action is complete
             console.clear();
             console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`),
             {margin: 1, borderStyle: 'double'}));
+            if(!FunctionalDirectories) { console.log(chalk.redBright.bold(`Issue with directories! Opening and loading projects is disabled until fixed`)); }
 
             BootAction = await bootmenu.MainSelection(FunctionalDirectories);
             
@@ -180,7 +202,7 @@ async function SetupCheck() {
                 case `Create New Project`:
                     //Select the project folder
                     ProjectDrive = await fileexplorer.DriveSelect();
-                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``, false, true);
                     if(ProjectFolder == `NA`) { break; }
 
                     //Create the project in the selected folder
@@ -192,13 +214,22 @@ async function SetupCheck() {
                 case `Load Project`:
                     //Select the project folder
                     ProjectDrive = await fileexplorer.DriveSelect();
-                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``);
+                    ProjectFolder = await fileexplorer.MainExplorer(ProjectDrive, ``, true, true);
                     if(ProjectFolder == `NA`) { break; }
 
                     WorkingDirectory = ProjectFolder;
                     ProjectData = fs.readJSONSync(`${WorkingDirectory}/ProjectData.json`);
                     BootActionComplete = true;
                     MainMenuLoop();
+                    break;
+                case `Edit Directories`:
+                    directories = require('../save_data/directories.json');
+                    DirectoryChangeChoice = await bootmenu.DirectorySetupMenu(directories);
+                    if(DirectoryChangeChoice == `Back`) { break; }
+                    await bootmenu.DirectoryChanger(directories, DirectoryChangeChoice, OwnDirectory);
+                    FunctionalDirectories = !directorysetup.IssuesCheck();
+                    isWavPlugin = directorysetup.WavPluginCheck();
+                    isEditorCore = directorysetup.EditorCoreCheck();
                     break;
             }
         }

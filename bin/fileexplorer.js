@@ -1,6 +1,15 @@
 var fs = require('fs-extra');
 const input = require("input");
 
+async function NewDirectoryCreator(Drive, Path){
+    NewFolderName = await input.text(`What should this new folder be named? `);
+    if (!fs.existsSync(Drive+Path+`/${NewFolderName}`)){
+        fs.mkdirSync(Drive+Path+`/${NewFolderName}`);
+    }
+
+    return Path+`/${NewFolderName}`;
+}
+
 module.exports = {
     DriveSelect: async function(){
         //Let the user select a drive
@@ -8,14 +17,15 @@ module.exports = {
         return "C:";
     },
 
-    MainExplorer: async function(Drive, Path){
+    MainExplorer: async function(Drive, Path, isAutoSelect, isProjectStarter){
         Complete = false;
         MadeSelection = false;
 
         while(!Complete){
             console.clear();
-            let Dummy = new Array()
-            AdditonalOptions = [`<-- Back`, `--> Select This Folder`];
+            let AdditonalOptions = [`<-- Back`];
+            if(!isAutoSelect) { AdditonalOptions = AdditonalOptions.concat([`--> Select This Folder`, `<-> Make A New Folder`]); }
+
             CurrentPathCont = fs.readdirSync(`${Drive}/${Path}`);
             for(i=0;i<CurrentPathCont.length;i++){
                 if(CurrentPathCont[i].includes(`.`)){ CurrentPathCont.splice(i, 1); }
@@ -34,8 +44,23 @@ module.exports = {
                 case `--> Select This Folder`:
                     return Drive+Path+`/`;
                     break;
+                case `<-> Make A New Folder`:
+                    Path = await NewDirectoryCreator(Drive, Path);
+                    break;
                 default:
                     Path += `/`+Select;
+
+                    if(isProjectStarter && fs.existsSync(Drive+Path+`/ProjectData.json`)){
+                        if(isAutoSelect){
+                            return Drive+Path+`/`;
+                        } else {
+                            console.clear();
+                            menu = require('./menu');
+                            console.log(`A project already exists in this folder!\nPlease select another folder`);
+                            await menu.GenericConfirm();
+                            Path = Path.slice(0, Path.length-(Select.length+1));
+                        }
+                    }
                     break;
             }
         }

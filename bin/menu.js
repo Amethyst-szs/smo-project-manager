@@ -42,15 +42,21 @@ module.exports = {
         }
     },
 
-    MainMenu: async function(isFTP){
+    MainMenu: async function(isFTP, isWavPlugin, isEditorCore){
         MenuChoices = [
         `Build Project (Quick)`,
         `Build Project (Full)`,
         `Build Project (Complete)`,
         `Add Template Objects`,
-        `Refresh EditorCore`,
-        `Add New Language`,
-        `Generate Music`];
+        `Add New Language`];
+        
+        if(isEditorCore){
+            MenuChoices.push(`Refresh EditorCore`);
+        }
+
+        if(isWavPlugin){
+            MenuChoices.push(`Generate Music`);
+        }
 
         if(!isFTP){
             MenuChoices.push(`Connect To Switch - FTP`);
@@ -58,6 +64,8 @@ module.exports = {
             MenuChoices.push(`Empty server RomFS`);
             MenuChoices.push(`Disconnect FTP`);
         }
+
+        MenuChoices.push(`Close Project`);
 
         return await input.select(`Menu Menu:`, MenuChoices);
     },
@@ -79,8 +87,13 @@ module.exports = {
                 for(i=0;i<Profiles.saves.length;i++){
                     SelectionMenu.push(Profiles.saves[i].label);
                 }
-                SelectionMenu.push(`Create new profile`);
+                SelectionMenu.push(`Create new profile`, `Back`);
                 SelectionChoice = await input.select(`Select a profile to connect to:`, SelectionMenu);
+
+                //Check if the connection should be adorted
+                if(SelectionChoice == `Back`){
+                    return false;
+                }
 
                 //Only continue down the profile loading path if they didn't choose to make a new profile
                 if(SelectionChoice != `Create new profile`){
