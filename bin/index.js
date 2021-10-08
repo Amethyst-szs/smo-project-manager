@@ -7,8 +7,6 @@ const { writeJsonSync } = require('fs-extra');
 
 //Code File Extensions
 const menu = require('./menu');
-const builder = require('./builder');
-const ftpconnector = require('./ftpconnector');
 const fileexplorer = require('./fileexplorer');
 
 //Variable Setup
@@ -20,101 +18,35 @@ let isFTP = false;
 let isWavPlugin = false;
 let isEditorCore = false;
 
+async function CheckPluginStatus(FunctionalDirectories, directorysetup){
+    //If the directories are all good to go, check the optional ones for funcationality
+    if(FunctionalDirectories == true){
+        isWavPlugin = directorysetup.WavPluginCheck();
+        isEditorCore = directorysetup.EditorCoreCheck();
+    }
+}
+
 async function MainMenuLoop() {
     //Prepare console
-    console.clear();
-    console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager\n${ProjectData.PName}`), {margin: 1, borderStyle: 'double'}));
-    if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected as ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
-    console.log(chalk.green.bold(`
-Previous Build Type: ${ProjectData.DumpStats.Type}
-Previous Build Time: ${ProjectData.DumpStats.Time}
-Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
+    ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
+    await menu.FormatMainMenu(isFTP, ProjectData, FTPAccessObject);
 
     //Launch main menu
     MenuSelection = await menu.MainMenu(isFTP, isWavPlugin, isEditorCore);
-    switch (MenuSelection){
-        case `Build Project (Complete)`:
-            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 2, OwnDirectory);
-            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
-            if(isFTP) {
-                await ftpconnector.FTPClearRomfs(FTPAccessObject);
-                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
-            }
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Build Project (Full)`:
-            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 1, OwnDirectory);
-            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
-            if(isFTP) {
-                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
-            }
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Build Project (Quick)`:
-            ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, 0, OwnDirectory);
-            ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
-            if(isFTP) {
-                await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
-            }
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Add Template Objects`:
-            SelectedObjects = await menu.TemplateObject(OwnDirectory);
-            const template = require('./template');
-            template.CopyFiles(WorkingDirectory, SelectedObjects, OwnDirectory);
-            MainMenuLoop();
-            return;
-        case `Refresh EditorCore`:
-            const editorcore = require('./editorcore');
-            editorcore.Refresh(WorkingDirectory);
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Add New Language`:
-            const newlang = require('./newlang');
-            const directories = require('../save_data/directories.json');
-            LangSelection = await menu.NewLanguage(directories);
-            newlang.NewLang(WorkingDirectory, LangSelection, OwnDirectory);
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Generate Music`:
-            const wavetool = require('./wavetool');
-            wavobj = await menu.MusicGenerator(WorkingDirectory);
-            wavetool.Main(WorkingDirectory, wavobj);
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Connect To Switch - FTP`:
-            FTPAccessObject = await menu.FTPSelection(OwnDirectory);
-            if(FTPAccessObject) { 
-                isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);     
-            }
-            MainMenuLoop();
-            return;
-        case `Empty server RomFS`:
-            await ftpconnector.FTPClearRomfs(FTPAccessObject);
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
-        case `Disconnect FTP`:
-            isFTP = false;
-            FTPAccessObject = {};
-            MainMenuLoop();
-            return;
-        case `Close Project`:
-            WorkingDirectory = null
-            SetupCheck();
-            return;
-        default:
-            console.log(`Invalid Selection`);
-            await menu.GenericConfirm();
-            MainMenuLoop();
-            return;
+
+    //Handle the selection and decide if the main menu should be reloaded after it is completed
+    let isReloadMain = true;
+    isReloadMain = await menu.MainMenuSelectionHandler(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory, isFTP, FTPAccessObject, menu);
+    
+    if(isReloadMain){
+        MainMenuLoop();
+        return;
+    } else {
+        WorkingDirectory = null;
+        SetupCheck();
+        return;
     }
+
 }
 
 async function SetupCheck() {
@@ -145,10 +77,7 @@ async function SetupCheck() {
     }    
 
     //If the directories are all good to go, check the optional ones for usage
-    if(FunctionalDirectories == true){
-        isWavPlugin = directorysetup.WavPluginCheck();
-        isEditorCore = directorysetup.EditorCoreCheck();
-    }
+    CheckPluginStatus(FunctionalDirectories, directorysetup);
 
     const projectinit = require('./projectinit');
 
@@ -161,33 +90,23 @@ async function SetupCheck() {
         //Load in required files
         ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
         ProgramVersion = require('../save_data/version.json');
+        UserKey = require('../save_data/unique_key.json');
         
         //Check for project updates
-        if(ProjectData.Version == ProgramVersion.Version){
-            //Program and project are matching versions, go to menu!
-            MainMenuLoop();
+        if(ProjectData.Version != ProgramVersion.Version){
+            projectinit.UpdateProject(WorkingDirectory, ProgramVersion.Version);
+            ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
         }
-        else
-        {
-            //Confirm load despite unmatching versions
-            Confirmation = await menu.ConfirmLoadOldProject();
-            if(Confirmation)
-            {
-                projectinit.UpdateProject(WorkingDirectory, ProgramVersion.Version);
-                ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
-                MainMenuLoop();
-            }
-            return;
-        }
+        
+        MainMenuLoop();
     } 
-    else //Open boot menu if no ProjectData.json is found
+    else //Open boot menu if no ProjectData.json is found 
     {
         //Require 2 modules for the optional boot menu
         const bootmenu = require('./bootmenu');
         BootActionComplete = false;
 
-        while(!BootActionComplete){
-            //Loop the boot menu until the boot action is complete
+        while(!BootActionComplete){ //Loop the boot menu until the boot action is complete
             console.clear();
             console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager`),
             {margin: 1, borderStyle: 'double'}));

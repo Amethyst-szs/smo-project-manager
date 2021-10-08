@@ -32,14 +32,14 @@ module.exports = {
         return await input.text(`Type here: `);
     },
 
-    ConfirmLoadOldProject: async function(){
-        UserInput = await input.select(`This project is outdated. Should it be updated? (May cause issues!)`, [`Yes`, `No`]);
-        switch(UserInput){
-            case `Yes`:
-                return true;
-            case `No`:
-                return false;
-        }
+    FormatMainMenu: async function(isFTP, ProjectData, FTPAccessObject){
+        console.clear();
+        console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager\n${ProjectData.PName}`), {margin: 1, borderStyle: 'double'}));
+        if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected as ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
+        console.log(chalk.green.bold(`
+    Previous Build Type: ${ProjectData.DumpStats.Type}
+    Previous Build Time: ${ProjectData.DumpStats.Time}
+    Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     },
 
     MainMenu: async function(isFTP, isWavPlugin, isEditorCore){
@@ -68,6 +68,85 @@ module.exports = {
         MenuChoices.push(`Close Project`);
 
         return await input.select(`Menu Menu:`, MenuChoices);
+    },
+
+    MainMenuSelectionHandler: async function(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory, isFTP, FTPAccessObject, menu){
+        //Enough things use the FTP connector to just include it for all menu selections
+        const ftpconnector = require('./ftpconnector');
+
+        //Prepare menu selector's switch case
+        MenuSelectionFull = MenuSelection;
+        if(MenuSelection.includes(`(`)) { MenuSelection = MenuSelection.slice(0, MenuSelection.indexOf(`(`)-1); }
+
+        console.log(MenuSelection, MenuSelection.slice(0, MenuSelection.indexOf(`(`)-1))
+        switch (MenuSelection){
+            case `Build Project`:
+                //Require builder.js
+                builder = require('./builder');
+
+                //Start by figuring out which type of build it is
+                BuildType = 0;
+                switch(MenuSelectionFull.slice(MenuSelectionFull.indexOf(`(`)+1, MenuSelectionFull.length-1)){
+                    case `Full`:
+                        BuildType = 1;
+                        break;
+                    case `Complete`:
+                        BuildType = 2;
+                        break;
+                }
+
+                //Actually build the project, and return a list of the files that changed
+                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory);
+                if(isFTP) {
+                    await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
+                }
+                await menu.GenericConfirm();
+                break;
+            case `Add Template Objects`:
+                SelectedObjects = await menu.TemplateObject(OwnDirectory);
+                const template = require('./template');
+                template.CopyFiles(WorkingDirectory, SelectedObjects, OwnDirectory);
+                break;
+            case `Refresh EditorCore`:
+                const editorcore = require('./editorcore');
+                editorcore.Refresh(WorkingDirectory);
+                await menu.GenericConfirm();
+                break;
+            case `Add New Language`:
+                const newlang = require('./newlang');
+                const directories = require('../save_data/directories.json');
+                LangSelection = await menu.NewLanguage(directories);
+                newlang.NewLang(WorkingDirectory, LangSelection, OwnDirectory);
+                await menu.GenericConfirm();
+                break;
+            case `Generate Music`:
+                const wavetool = require('./wavetool');
+                wavobj = await menu.MusicGenerator(WorkingDirectory);
+                wavetool.Main(WorkingDirectory, wavobj);
+                await menu.GenericConfirm();
+                break;
+            case `Connect To Switch - FTP`:
+                FTPAccessObject = await menu.FTPSelection(OwnDirectory);
+                if(FTPAccessObject) { 
+                    isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);     
+                }
+                break;
+            case `Empty server RomFS`:
+                await ftpconnector.FTPClearRomfs(FTPAccessObject);
+                await menu.GenericConfirm();
+                break;
+            case `Disconnect FTP`:
+                isFTP = false;
+                FTPAccessObject = {};
+                break;
+            case `Close Project`:
+                return false;
+            default:
+                console.log(`Invalid Selection`);
+                await menu.GenericConfirm();
+                break;
+        }
+        return true;
     },
 
     FTPSelection: async function(OwnDirectory){

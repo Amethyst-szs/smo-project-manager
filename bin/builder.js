@@ -13,7 +13,7 @@ function UpdateConsole(Label, Progress){
     menu.ProgressBar(Label, Progress, TotalTasks);
 }
 
-function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest, OrigSMOFolder){
+function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest, OrigSMOFolder, UserKey){
     //Start by verifying that there is content in this folders
     if(FolderContents.length == 0) {return;}
 
@@ -26,13 +26,13 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
         if(CurrentStats.isFile()) {
 
             //Compare to last date modified stored in ProjectData.json
-            if(ProjectData.dates[OrigSMOFolder].hasOwnProperty(i)){
-                if(ProjectData.dates[OrigSMOFolder][i] != CurrentStats.mtimeMs){
-                    ProjectData.dates[OrigSMOFolder][i] = CurrentStats.mtimeMs
+            if(ProjectData.dates[UserKey][OrigSMOFolder].hasOwnProperty(i)){
+                if(ProjectData.dates[UserKey][OrigSMOFolder][i] != CurrentStats.mtimeMs){
+                    ProjectData.dates[UserKey][OrigSMOFolder][i] = CurrentStats.mtimeMs
                     ChangedFiles.push(i);
                 }
             } else {
-                ProjectData.dates[OrigSMOFolder][i] = CurrentStats.mtimeMs
+                ProjectData.dates[UserKey][OrigSMOFolder][i] = CurrentStats.mtimeMs
                 ChangedFiles.push(i);
             }
 
@@ -59,6 +59,19 @@ module.exports = {
         //Reset ChangedFiles for build
         ChangedFiles = [];
 
+        //Load in user's personal key and then verify this user has a slot in the dates object
+        UserKey = fs.readJSONSync(`${OwnDirectory}/save_data/unique_key.json`);
+        UserKey = UserKey.Main;
+
+        if(!ProjectData.dates.hasOwnProperty(UserKey)){
+            ProjectData.dates[UserKey] = {};
+        }
+
+        //If doing a complete build, reset this user's dates key object
+        if(FullBuild >= 2) {
+            ProjectData.dates[UserKey] = {};
+        }
+
         ///////////////////////
         //Delete previous build
         ///////////////////////
@@ -81,10 +94,6 @@ module.exports = {
             }
         }
 
-        if(FullBuild >= 2) {
-            ProjectData.dates = {};
-        }
-
         //////////////////////////
         //Recursive object copying
         //////////////////////////
@@ -98,8 +107,8 @@ module.exports = {
             //If this folder is empty, skip it and move on to the next
             if(FolderContents.length == 0) {
                 //Before skipping the folder, remove this attribute from the ProjectData.json if it exists
-                if(ProjectData.dates.hasOwnProperty(SMOFolders[CurrentFolder])){
-                    delete ProjectData.dates[SMOFolders[CurrentFolder]];
+                if(ProjectData.dates[UserKey].hasOwnProperty(SMOFolders[CurrentFolder]) && ProjectFolders[CurrentFolder] != `CubeMaps`){
+                    delete ProjectData.dates[UserKey][SMOFolders[CurrentFolder]];
                 }
                 continue; 
             }
@@ -110,12 +119,12 @@ module.exports = {
             }
 
             //Check to make sure this folder exists in the ProjectData Json
-            if(!ProjectData.dates.hasOwnProperty(SMOFolders[CurrentFolder])){
-                ProjectData.dates[SMOFolders[CurrentFolder]] = {};
+            if(!ProjectData.dates[UserKey].hasOwnProperty(SMOFolders[CurrentFolder])){
+                ProjectData.dates[UserKey][SMOFolders[CurrentFolder]] = {};
             }
 
             //Run code on current folder
-            ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder]);
+            ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder], UserKey);
         }
 
         /////////////////

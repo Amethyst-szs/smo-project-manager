@@ -12,9 +12,18 @@ async function NewDirectoryCreator(Drive, Path){
 
 module.exports = {
     DriveSelect: async function(){
-        //Let the user select a drive
-        //For now, just return "C:/"
-        return "C:";
+        let Options = [`C`, `D`, `E`, `F`, `G`, `H`, `I`];
+        let ExistDrives = [];
+
+        for(i=0;i<Options.length;i++){
+            if (fs.pathExistsSync(`${Options[i]}:`)) { ExistDrives.push(Options[i]); }
+        }
+
+        if(ExistDrives.length == 1) {
+            return ExistDrives[0]+`:`;
+        } else {
+            return await input.choice(`Which drive would you like to use?`, ExistDrives+`:`);
+        }
     },
 
     MainExplorer: async function(Drive, Path, isAutoSelect, isProjectStarter){
