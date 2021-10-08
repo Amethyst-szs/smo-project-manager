@@ -128,7 +128,9 @@ module.exports = {
             case `Connect To Switch - FTP`:
                 FTPAccessObject = await menu.FTPSelection(OwnDirectory);
                 if(FTPAccessObject) { 
-                    isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);     
+                    isFTP = await ftpconnector.FTPSyncCheck(FTPAccessObject);   
+                    FTPAccessObject.isFTP = isFTP; 
+                    return FTPAccessObject;
                 }
                 break;
             case `Empty server RomFS`:

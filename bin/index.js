@@ -39,6 +39,12 @@ async function MainMenuLoop() {
     isReloadMain = await menu.MainMenuSelectionHandler(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory, isFTP, FTPAccessObject, menu);
     
     if(isReloadMain){
+        if(typeof isReloadMain === typeof {}){
+            if(isReloadMain.isFTP == true){
+                isFTP = true;
+                FTPAccessObject = isReloadMain;
+            }
+        }
         MainMenuLoop();
         return;
     } else {
