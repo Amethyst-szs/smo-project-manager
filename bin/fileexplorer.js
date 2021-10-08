@@ -22,7 +22,7 @@ module.exports = {
         if(ExistDrives.length == 1) {
             return ExistDrives[0]+`:`;
         } else {
-            return await input.choice(`Which drive would you like to use?`, ExistDrives+`:`);
+            return await input.select(`Which drive would you like to use?`, ExistDrives)+`:`;
         }
     },
 
@@ -36,9 +36,10 @@ module.exports = {
             if(!isAutoSelect) { AdditonalOptions = AdditonalOptions.concat([`--> Select This Folder`, `<-> Make A New Folder`]); }
 
             CurrentPathCont = fs.readdirSync(`${Drive}/${Path}`);
-            for(i=0;i<CurrentPathCont.length;i++){
-                if(CurrentPathCont[i].includes(`.`)){ CurrentPathCont.splice(i, 1); }
-            }
+            // for(i=0;i<CurrentPathCont.length;i++){
+            //     CurrentStats = fs.statSync(Drive+Path+`/`+CurrentPathCont[i])
+            //     if(CurrentStats.isFile()){ CurrentPathCont.splice(i, 1); }
+            // }
             
             SelectionMenu = AdditonalOptions.concat(CurrentPathCont);
             Select = await input.select(`Select your folder:\nCurrent Path: ${Path}`, SelectionMenu);

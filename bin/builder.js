@@ -24,7 +24,6 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
 
         //Perform different actions based on if the object is a file or folder
         if(CurrentStats.isFile()) {
-
             //Compare to last date modified stored in ProjectData.json
             if(ProjectData.dates[UserKey][OrigSMOFolder].hasOwnProperty(i)){
                 if(ProjectData.dates[UserKey][OrigSMOFolder][i] != CurrentStats.mtimeMs){
@@ -42,7 +41,7 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
         } else {
             //Enter the sub folder and copy it's files over to the romfs
             SubFolderContents = fs.readdirSync(`${WorkingDirectory}/project/${Path}/${i}/`);
-            ProcessFolder(ProjectData, WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest, OrigSMOFolder);
+            ProcessFolder(ProjectData, WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest, OrigSMOFolder, UserKey);
         }
     });
 }
@@ -122,7 +121,7 @@ module.exports = {
             if(!ProjectData.dates[UserKey].hasOwnProperty(SMOFolders[CurrentFolder])){
                 ProjectData.dates[UserKey][SMOFolders[CurrentFolder]] = {};
             }
-
+            
             //Run code on current folder
             ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder], UserKey);
         }
