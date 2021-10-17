@@ -2,6 +2,7 @@
 
 if exist %0\..\node_modules (
   title SMO Project Manager
+  mode con: cols=85 lines=30
   node %0\..\bin\index.js
 ) else (
   title SMO Project Manager - Initalization Tool
