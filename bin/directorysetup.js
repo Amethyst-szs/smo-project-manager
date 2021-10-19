@@ -11,7 +11,8 @@ module.exports = {
                 "ObjectDataOverride": "",
                 "LocalizedDataOverride": ""
             },
-            "PluginWaveConverter": ""
+            "PluginWaveConverter": "",
+            "YuzuDirectory": ""
         }
         jsonfile.writeFileSync(OwnDirectory+'save_data/directories.json', directoriesDefault, {spaces: `\t`});
         return;
@@ -45,6 +46,14 @@ module.exports = {
             return true;
         }
 
+        //If the property YuzuDirectory doesn't exist, add it
+        if(!Directories.hasOwnProperty('YuzuDirectory')){
+            console.log(chalk.red.bold(`Your directories file is outdated. Check if anything needs to be added.`));
+            Directories.YuzuDirectory = "";
+            fs.writeJSONSync(OwnDirectory+'save_data/directories.json', Directories, {spaces: `\t`});
+            return true;
+        }
+
         return false;
     },
 
@@ -62,5 +71,13 @@ module.exports = {
             return true;
         }
         return false;
+    },
+
+    YuzuCheck: function(YuzuDirectory){
+        Directories = require('../save_data/directories.json');
+        if(fs.existsSync(`${Directories.YuzuDirectory}`)){
+            return Directories.YuzuDirectory;
+        }
+        return YuzuDirectory;
     }
 }

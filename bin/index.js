@@ -12,9 +12,11 @@ const fileexplorer = require('./fileexplorer');
 //Variable Setup
 let OwnDirectory = __dirname.slice(0,__dirname.length-3);
 let WorkingDirectory = process.cwd();
+let YuzuDirectory = process.env[`APPDATA`]+`/yuzu/load/0100000000010000/`;
 let ProjectData;
 let FTPAccessObject;
 let isFTP = false;
+let isYuzu = false;
 let isWavPlugin = false;
 let isEditorCore = false;
 
@@ -23,6 +25,7 @@ async function CheckPluginStatus(FunctionalDirectories, directorysetup){
     if(FunctionalDirectories == true){
         isWavPlugin = directorysetup.WavPluginCheck();
         isEditorCore = directorysetup.EditorCoreCheck();
+        YuzuDirectory = directorysetup.YuzuCheck(YuzuDirectory);
     }
 }
 
@@ -30,13 +33,14 @@ async function MainMenuLoop() {
     //Prepare console
     ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
     await menu.FormatMainMenu(isFTP, ProjectData, FTPAccessObject);
-
+    console.log(YuzuDirectory)
     //Launch main menu
     MenuSelection = await menu.MainMenu(isFTP, isWavPlugin, isEditorCore);
 
     //Handle the selection and decide if the main menu should be reloaded after it is completed
     let isReloadMain = true;
-    isReloadMain = await menu.MainMenuSelectionHandler(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory, isFTP, FTPAccessObject, menu);
+    isReloadMain = await menu.MainMenuSelectionHandler(MenuSelection, ProjectData, WorkingDirectory,
+    OwnDirectory, isFTP, FTPAccessObject, isYuzu, YuzuDirectory, menu);
     
     if(isReloadMain){
         if(typeof isReloadMain === typeof {}){

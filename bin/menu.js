@@ -70,7 +70,8 @@ module.exports = {
         return await input.select(`Menu Menu:`, MenuChoices);
     },
 
-    MainMenuSelectionHandler: async function(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory, isFTP, FTPAccessObject, menu){
+    MainMenuSelectionHandler: async function(MenuSelection, ProjectData, WorkingDirectory, OwnDirectory,
+        isFTP, FTPAccessObject, isYuzu, YuzuDirectory, menu){
         //Enough things use the FTP connector to just include it for all menu selections
         const ftpconnector = require('./ftpconnector');
 
@@ -96,7 +97,7 @@ module.exports = {
                 }
 
                 //Actually build the project, and return a list of the files that changed
-                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory);
+                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory, isYuzu, YuzuDirectory);
                 if(isFTP) {
                     await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
                 }
