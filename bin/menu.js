@@ -32,17 +32,18 @@ module.exports = {
         return await input.text(`Type here: `);
     },
 
-    FormatMainMenu: async function(isFTP, ProjectData, FTPAccessObject){
+    FormatMainMenu: async function(isFTP, isYuzu, ProjectData, FTPAccessObject, YuzuDirectory){
         console.clear();
         console.log(boxen(chalk.bold.cyanBright(`Super Mario Odyssey - Project Manager\n${ProjectData.PName}`), {margin: 1, borderStyle: 'double'}));
         if(isFTP) {console.log(chalk.blueBright.italic.bold(`Connected as ${FTPAccessObject.user} on port ${FTPAccessObject.port}`));}
+        if(isYuzu) {console.log(chalk.blueBright.italic.bold(`Connected to Yuzu in ${YuzuDirectory}`));}
         console.log(chalk.green.bold(`
     Previous Build Type: ${ProjectData.DumpStats.Type}
     Previous Build Time: ${ProjectData.DumpStats.Time}
     Amount Of Builds Done: ${ProjectData.DumpStats.Amount}\n`));
     },
 
-    MainMenu: async function(isFTP, isWavPlugin, isEditorCore){
+    MainMenu: async function(isFTP, isWavPlugin, isEditorCore, isYuzu){
         MenuChoices = [
         `Build Project (Quick)`,
         `Build Project (Full)`,
@@ -58,11 +59,14 @@ module.exports = {
             MenuChoices.push(`Generate Music`);
         }
 
-        if(!isFTP){
+        if(!isFTP && !isYuzu){
             MenuChoices.push(`Connect To Switch - FTP`);
-        } else {
+            MenuChoices.push(`Connect To Switch - Yuzu`);
+        } 
+        
+        if(isFTP) {
             MenuChoices.push(`Empty server RomFS`);
-            MenuChoices.push(`Disconnect FTP`);
+            MenuChoices.push(`Disconnect FTP (Disabled)`);
         }
 
         MenuChoices.push(`Close Project`);
@@ -97,10 +101,17 @@ module.exports = {
                 }
 
                 //Actually build the project, and return a list of the files that changed
-                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory, isYuzu, YuzuDirectory);
+                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory, isYuzu);
+
+                //Run extra stuff if hooked into FTP or Yuzu
                 if(isFTP) {
                     await ftpconnector.FTPTransferProject(WorkingDirectory, ChangedFiles, FTPAccessObject);
                 }
+                if(isYuzu) {
+                    fs.emptyDirSync(`${YuzuDirectory}/${ProjectData.PName}/romfs/`);
+                    fs.copySync(`${WorkingDirectory}/romfs/`, `${YuzuDirectory}/${ProjectData.PName}/romfs/`);
+                }
+
                 await menu.GenericConfirm();
                 break;
             case `Add Template Objects`:
@@ -134,6 +145,8 @@ module.exports = {
                     return FTPAccessObject;
                 }
                 break;
+            case `Connect To Switch - Yuzu`:
+                return { "isYuzu": true }
             case `Empty server RomFS`:
                 await ftpconnector.FTPClearRomfs(FTPAccessObject);
                 await menu.GenericConfirm();

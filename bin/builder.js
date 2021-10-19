@@ -47,7 +47,7 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
 }
 
 module.exports = {
-    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu, YuzuDirectory){
+    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu){
         //Console setup
         console.time(`Duration`);
         UpdateConsole(`Preparing build...`, 0); //Task 0
@@ -70,9 +70,6 @@ module.exports = {
         if(FullBuild >= 2) {
             ProjectData.dates[UserKey] = {};
         }
-
-        //If this is a Yuzu type build, verify the target directory exists
-        if(isYuzu && fs.pathExistsSync(YuzuDirectory))
 
         ///////////////////////
         //Delete previous build
@@ -256,6 +253,11 @@ module.exports = {
 
         //Log duration
         console.timeEnd(`Duration`);
+
+        //Give extra prompt to wait if using a Yuzu connection
+        if(isYuzu){
+            UpdateConsole(`Syncing with Yuzu...`, 5);
+        }
 
         //Return
         return ChangedFiles;

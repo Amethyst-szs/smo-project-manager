@@ -32,10 +32,10 @@ async function CheckPluginStatus(FunctionalDirectories, directorysetup){
 async function MainMenuLoop() {
     //Prepare console
     ProjectData = fs.readJSONSync(WorkingDirectory+`/ProjectData.json`); 
-    await menu.FormatMainMenu(isFTP, ProjectData, FTPAccessObject);
-    console.log(YuzuDirectory)
+    await menu.FormatMainMenu(isFTP, isYuzu, ProjectData, FTPAccessObject, YuzuDirectory);
+    
     //Launch main menu
-    MenuSelection = await menu.MainMenu(isFTP, isWavPlugin, isEditorCore);
+    MenuSelection = await menu.MainMenu(isFTP, isWavPlugin, isEditorCore, isYuzu);
 
     //Handle the selection and decide if the main menu should be reloaded after it is completed
     let isReloadMain = true;
@@ -48,11 +48,17 @@ async function MainMenuLoop() {
                 isFTP = true;
                 FTPAccessObject = isReloadMain;
             }
+
+            if(isReloadMain.isYuzu == true){
+                isYuzu = true;
+            }
         }
         MainMenuLoop();
         return;
     } else {
         WorkingDirectory = null;
+        isFTP = false;
+        isYuzu = false;
         SetupCheck();
         return;
     }

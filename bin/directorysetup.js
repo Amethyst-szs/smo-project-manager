@@ -75,7 +75,7 @@ module.exports = {
 
     YuzuCheck: function(YuzuDirectory){
         Directories = require('../save_data/directories.json');
-        if(fs.existsSync(`${Directories.YuzuDirectory}`)){
+        if(fs.existsSync(`${Directories.YuzuDirectory}` && Directories.YuzuDirectory.includes(`0100000000010000`))){
             return Directories.YuzuDirectory;
         }
         return YuzuDirectory;

@@ -34,8 +34,8 @@ module.exports = {
         //List of settings avaliable
         Options = [`SMODirectory - ${directories.SMODirectory}`, `EditorCore* - ${directories.EditorCore}`,
         `ObjectDataOverride* - ${directories.Optional.ObjectDataOverride}`, `LocalizedDataOverride* - ${directories.Optional.LocalizedDataOverride}`,
-        `PluginWaveConverter* - ${directories.PluginWaveConverter}`];
-        SettingPointers = [`EditorCore`, `SMODirectory`, `ObjectDataOverride`, `LocalizedDataOverride`, `PluginWaveConverter`];
+        `PluginWaveConverter* - ${directories.PluginWaveConverter}`, `YuzuDirectory* - ${directories.YuzuDirectory}`];
+        SettingPointers = [`EditorCore`, `SMODirectory`, `ObjectDataOverride`, `LocalizedDataOverride`, `PluginWaveConverter`, `YuzuDirectory`];
         
         console.clear();
         console.log(chalk.cyanBright(`Directory Editor`));
