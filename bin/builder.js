@@ -13,7 +13,7 @@ function UpdateConsole(Label, Progress){
     menu.ProgressBar(Label, Progress, TotalTasks);
 }
 
-function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest, OrigSMOFolder, UserKey){
+function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest, OrigSMOFolder, UserKey, isFTP){
     //Start by verifying that there is content in this folders
     if(FolderContents.length == 0) {return;}
 
@@ -25,7 +25,7 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
         //Perform different actions based on if the object is a file or folder
         if(CurrentStats.isFile()) {
             //Compare to last date modified stored in ProjectData.json
-            if(ProjectData.dates[UserKey][OrigSMOFolder].hasOwnProperty(i)){
+            if(ProjectData.dates[UserKey][OrigSMOFolder].hasOwnProperty(i) && isFTP){
                 if(ProjectData.dates[UserKey][OrigSMOFolder][i] != CurrentStats.mtimeMs){
                     ProjectData.dates[UserKey][OrigSMOFolder][i] = CurrentStats.mtimeMs
                     ChangedFiles.push(i);
@@ -41,13 +41,13 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
         } else {
             //Enter the sub folder and copy it's files over to the romfs
             SubFolderContents = fs.readdirSync(`${WorkingDirectory}/project/${Path}/${i}/`);
-            ProcessFolder(ProjectData, WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest, OrigSMOFolder, UserKey);
+            ProcessFolder(ProjectData, WorkingDirectory, SubFolderContents, Path+`/${i}`, Dest, OrigSMOFolder, UserKey, isFTP);
         }
     });
 }
 
 module.exports = {
-    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu){
+    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu, isFTP){
         //Console setup
         console.time(`Duration`);
         UpdateConsole(`Preparing build...`, 0); //Task 0
@@ -123,7 +123,7 @@ module.exports = {
             }
             
             //Run code on current folder
-            ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder], UserKey);
+            ProcessFolder(ProjectData, WorkingDirectory, FolderContents, ProjectFolders[CurrentFolder], SMOFolders[CurrentFolder], SMOFolders[CurrentFolder], UserKey, isFTP);
         }
 
         /////////////////

@@ -101,7 +101,7 @@ module.exports = {
                 }
 
                 //Actually build the project, and return a list of the files that changed
-                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory, isYuzu);
+                ChangedFiles = await builder.Build(ProjectData, WorkingDirectory, BuildType, OwnDirectory, isYuzu, isFTP);
 
                 //Run extra stuff if hooked into FTP or Yuzu
                 if(isFTP) {
