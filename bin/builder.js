@@ -218,7 +218,9 @@ module.exports = {
         }
 
         //Debug Folder Real Quick
-        if(fs.pathExists(`${WorkingDirectory}/project/Debug/`)){
+        if(fs.pathExists(`${WorkingDirectory}/project/Debug/`) && !fs.emptyDirSync(`${WorkingDirectory}/project/Debug/`) && FullBuild >= 1){
+            //You can push DebugHandler to the list
+            ChangedFiles.push(`DebugHandler`);
             if(!fs.pathExistsSync(`${WorkingDirectory}/romfs/DebugData/`)){
                 fs.mkdirSync(`${WorkingDirectory}/romfs/DebugData/`);
             }

@@ -94,11 +94,16 @@ module.exports = {
 
                 //Stop automatically tracking the transfer progress
                 client.trackProgress()
-                UpdateConsole(`Finalizing LocalizedData...`, TotalTasks-2, TotalTasks);
+                UpdateConsole(`Finalizing LocalizedData & DebugData...`, TotalTasks-2, TotalTasks);
 
                 //Move LocalizedData over IF "LocalizedDataHandler" remains in ChangedFiles
                 if(ChangedFiles.includes(`LocalizedDataHandler`)){
                     await client.uploadFromDir(`${WorkingDirectory}/romfs/LocalizedData/`, `${SMOPath}/LocalizedData/`);
+                }
+
+                //Move DebugData over IF "DebugHandler" remains in ChangedFiles
+                if(ChangedFiles.includes(`DebugHandler`)){
+                    await client.uploadFromDir(`${WorkingDirectory}/romfs/DebugData/`, `${SMOPath}/DebugData/`);
                 }
 
                 //Update user about music transfer if music is being transfered
@@ -112,6 +117,8 @@ module.exports = {
                         ChangedFiles = []; //CHANGE THIS IF MORE CHECKS ARE ADDED AFTER THIS POINT!!!!!!
                     }
                 }
+
+                //Transfer DebugData contents
 
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }
