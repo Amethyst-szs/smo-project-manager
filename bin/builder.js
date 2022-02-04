@@ -217,6 +217,14 @@ module.exports = {
             }
         }
 
+        //Debug Folder Real Quick
+        if(fs.pathExists(`${WorkingDirectory}/project/Debug/`)){
+            if(!fs.pathExistsSync(`${WorkingDirectory}/romfs/DebugData/`)){
+                fs.mkdirSync(`${WorkingDirectory}/romfs/DebugData/`);
+            }
+            fs.copy(`${WorkingDirectory}/project/Debug/`, `${WorkingDirectory}/romfs/DebugData/`);
+        }
+
         /////////////////////////
         //Update ProjectData.json
         /////////////////////////

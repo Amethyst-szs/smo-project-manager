@@ -23,6 +23,11 @@ module.exports = {
             JSONObject.PName = ProjectName.slice(ProjectName.slice(0, ProjectName.length-1).lastIndexOf(`\\`)+1, ProjectName.length);
         }
 
+        //Add Debug folder if it doesn't exist already
+        if(!fs.existsSync(`${WorkingDirectory}/project/Debug`)){
+            fs.mkdirSync(`${WorkingDirectory}/project/Debug/`);
+        }
+
         //Set ProjectData to current version and save
         JSONObject.Version = parseInt(CurrentVersion, 10);
         fs.writeJSONSync(`${WorkingDirectory}/ProjectData.json`, JSONObject, {spaces: `\t`});
