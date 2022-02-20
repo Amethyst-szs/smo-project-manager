@@ -47,7 +47,7 @@ function ProcessFolder(ProjectData, WorkingDirectory, FolderContents, Path, Dest
 }
 
 module.exports = {
-    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu, isFTP){
+    Build: function(ProjectData, WorkingDirectory, FullBuild, OwnDirectory, isYuzu, isFTP, isStarlight){
         //Console setup
         console.time(`Duration`);
         UpdateConsole(`Preparing build...`, 0); //Task 0
@@ -218,13 +218,16 @@ module.exports = {
         }
 
         //Debug Folder Real Quick
-        if(fs.pathExists(`${WorkingDirectory}/project/Debug/`) && !fs.emptyDirSync(`${WorkingDirectory}/project/Debug/`) && FullBuild >= 1){
+        if(fs.readdirSync(`${WorkingDirectory}/project/Debug/`).length != 0){
             //You can push DebugHandler to the list
             ChangedFiles.push(`DebugHandler`);
-            if(!fs.pathExistsSync(`${WorkingDirectory}/romfs/DebugData/`)){
-                fs.mkdirSync(`${WorkingDirectory}/romfs/DebugData/`);
-            }
-            fs.copy(`${WorkingDirectory}/project/Debug/`, `${WorkingDirectory}/romfs/DebugData/`);
+            fs.ensureDirSync(`${WorkingDirectory}/romfs/DebugData/`);
+            fs.copySync(`${WorkingDirectory}/project/Debug/`, `${WorkingDirectory}/romfs/DebugData/`);
+        }
+
+        //ANDDDD starlight integration
+        if(ProjectData.starlight){
+            ChangedFiles.push(`StarlightHandler`);
         }
 
         /////////////////////////

@@ -114,11 +114,19 @@ module.exports = {
                     if(ChangedFiles[i].includes(`.bfstm`)){
                         await client.ensureDir(`${SMOPath}/SoundData/stream/`);
                         await client.uploadFromDir(`${WorkingDirectory}/romfs/SoundData/stream/`, `${SMOPath}/SoundData/stream/`);
-                        ChangedFiles = []; //CHANGE THIS IF MORE CHECKS ARE ADDED AFTER THIS POINT!!!!!!
                     }
                 }
 
-                //Transfer DebugData contents
+                //Starlight Handler
+                if(ChangedFiles.includes("StarlightHandler")){
+                    await client.cd('/');
+                    await client.ensureDir(`atmosphere/exefs_patches/StarlightBase/`);
+                    await client.cd('/');
+                    await client.ensureDir(`atmosphere/contents/0100000000010000/exefs/`);
+                    await client.cd('/');
+                    await client.uploadFromDir(`${WorkingDirectory}/starlight/starlight_patch_100/`, `/`);
+                    ChangedFiles = []; //CHANGE THIS IF MORE CHECKS ARE ADDED AFTER THIS POINT!!!!!!
+                }
 
                 UpdateConsole(`Completed transfer!`, TotalTasks, TotalTasks);
             }

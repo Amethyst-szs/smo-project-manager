@@ -8,6 +8,7 @@ const { writeJsonSync } = require('fs-extra');
 //Code File Extensions
 const menu = require('./menu');
 const fileexplorer = require('./fileexplorer');
+const starlight = require('./starlight');
 
 //Variable Setup
 let OwnDirectory = __dirname.slice(0,__dirname.length-3);
@@ -59,6 +60,7 @@ async function MainMenuLoop() {
         WorkingDirectory = null;
         isFTP = false;
         isYuzu = false;
+        starlight.Shutdown();
         SetupCheck();
         return;
     }
@@ -112,6 +114,20 @@ async function SetupCheck() {
         if(ProjectData.Version != ProgramVersion.Version){
             projectinit.UpdateProject(WorkingDirectory, ProgramVersion.Version);
             ProjectData = await require(WorkingDirectory+`/ProjectData.json`);
+        }
+
+        //Connect to Starlight if enabled
+        if(ProjectData.starlight == true){
+            //If this is the first launch with Starlight enabled, add the starlight files
+            if(!fs.existsSync(`${WorkingDirectory}/starlight/`)){
+                starlight.CreateStarlight(WorkingDirectory, OwnDirectory);
+            }
+
+            //Once starlight is verified, send message to the server that it is good to go
+            starlight.LoggerInit(OwnDirectory);
+        } else {
+            //If we aren't dealing with a starlight project, shut down the alternate server interface
+            starlight.Shutdown(OwnDirectory);
         }
         
         MainMenuLoop();

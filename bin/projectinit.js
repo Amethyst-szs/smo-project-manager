@@ -23,6 +23,13 @@ module.exports = {
             JSONObject.PName = ProjectName.slice(ProjectName.slice(0, ProjectName.length-1).lastIndexOf(`\\`)+1, ProjectName.length);
         }
 
+        //exefs - Logger Integration
+        if(!JSONObject.hasOwnProperty(`starlight`)){
+            ProjectName = WorkingDirectory;
+            console.log(ProjectName);
+            JSONObject.starlight = false;
+        }
+
         //Add Debug folder if it doesn't exist already
         if(!fs.existsSync(`${WorkingDirectory}/project/Debug`)){
             fs.mkdirSync(`${WorkingDirectory}/project/Debug/`);
@@ -51,7 +58,8 @@ module.exports = {
                 Type: `N/A`
             },
             songs: {},
-            dates: {}
+            dates: {},
+            starlight: false
         }
 
         //Write to JSON file
