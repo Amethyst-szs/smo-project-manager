@@ -7,7 +7,12 @@ function ServerCommuncation(Transit){
 
     var networkInterfaces = os.networkInterfaces();
     console.log(networkInterfaces);
-    var ip = networkInterfaces.Ethernet[0].address;
+    let ip = ``;
+    if(networkInterfaces.hasOwnProperty(`Ethernet`)){
+        ip = networkInterfaces.Ethernet[0].address;
+    } else if (networkInterfaces.hasOwnProperty(`Wi-Fi`)){
+        ip = networkInterfaces[`Wi-Fi`][0].address;
+    }
 
     console.log(ip);
 
